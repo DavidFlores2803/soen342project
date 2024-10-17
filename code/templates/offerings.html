@@ -1,5 +1,35 @@
 {% include 'header.html' %}
 
-        <h1>Offerings</h1>
+    <h1>Offerings List</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Lesson Name</th>
+                <th>Lesson Type</th>
+                <th>Lesson Duration</th>
+                <th>Location</th>
+                <th>Availabilities</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for offering in offerings %}
+            <tr>
+                <td>{{ offering.id }}</td>
+                <td>{{ offering.lesson.name }}</td>
+                <td>{{ offering.lesson.type }}</td>
+                <td>{{ offering.lesson.duration }}</td>
+                <td>{{ offering.location }}</td>
+                <td>
+                    <ul>
+                        {% for availability in offering.availabilities %}
+                        <li>{{ availability }}</li>
+                        {% endfor %}
+                    </ul>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
     </body>
 </html>
