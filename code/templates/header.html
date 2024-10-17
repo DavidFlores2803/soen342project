@@ -1,0 +1,20 @@
+<!-- header for all tabs -->
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Dave&Syd</title>
+    </head>
+    <body>
+        <header>
+            <nav>
+                <h2><a href="/">Home</a></h2>
+                <ul>
+                    <li><a href="/offerings">Offerings</a></li>
+                </ul>
+            </nav>
+            {% if session.name %}
+            <p >Welcome, {{session.name}} </p><a href="{{ url_for('logout') }}"><button>Logout</button></a>
+            {% else %}
+            <a href="/login"><button>Log in</button></a>
+            {% endif %}
+        </header>
