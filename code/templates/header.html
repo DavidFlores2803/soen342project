@@ -12,9 +12,10 @@
                     <li><a href="/offerings">Offerings</a></li>
                 </ul>
             </nav>
-            {% if session.name %}
-            <p >Welcome, {{session.name}} </p><a href="{{ url_for('logout') }}"><button>Logout</button></a>
+            {% if session.get('currentAccount') %}
+            <p>Welcome, {{ session['currentAccount']['name'] }} </p>
+            <a href="{{ url_for('logout') }}"><button>Logout</button></a>
             {% else %}
-            <a href="/login"><button>Log in</button></a>
+            <a href="/instructor_login"><button>Instructor log in</button></a>
             {% endif %}
         </header>

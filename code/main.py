@@ -10,14 +10,27 @@ offeringsController = OfferingsController()
 
 @app.route("/")
 def home():
+    if("currentAccount" in session):
+        print(f"worked {session['currentAccount']['name']}")
     return render_template("index.html")
 
-@app.route("/login", methods=["POST", "GET"])
-def login():
+@app.route("/instructor_login", methods=["POST", "GET"])
+def instructor_login():
     if request.method == "POST":
-        session["name"] = request.form["name"]
-        session["number"] = request.form["number"]
-        session["specialization"] = request.form["specialization"]
+        username = request.form["username"]
+        password = request.form["password"]
+        name = request.form["name"]
+        number = request.form["number"]
+        specialization = request.form["specialization"]
+        
+        session["currentAccount"] = {
+            "username": username,
+            "password": password,
+            "name": name,
+            "number": number,
+            "specialization": specialization
+        }
+
         #TODO redirect to user page instead
         return redirect(url_for("home"))
     else:
@@ -25,9 +38,7 @@ def login():
     
 @app.route("/logout")
 def logout():
-    session.pop("name", None)
-    session.pop("number", None)
-    session.pop("specialization", None)
+    session.clear()
     return redirect(url_for("home"))
 
     
