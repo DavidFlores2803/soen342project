@@ -8,8 +8,9 @@
                 <th>Lesson Name</th>
                 <th>Lesson Type</th>
                 <th>Lesson Duration</th>
-                <th>Location</th>
-                <th>Availabilities</th>
+                <th>Location Name</th>
+                <th>Location City</th>
+                <th>Time Slots</th>
             </tr>
         </thead>
         <tbody>
@@ -19,11 +20,12 @@
                 <td>{{ offering.lesson.name }}</td>
                 <td>{{ offering.lesson.type }}</td>
                 <td>{{ offering.lesson.duration }}</td>
-                <td>{{ offering.location }}</td>
+                <td>{{ offering.location.name }}</td>
+                <td>{{ offering.location.city }}</td>
                 <td>
                     <ul>
-                        {% for availability in offering.availabilities %}
-                        <li>{{ availability }}</li>
+                        {% for time_slot in offering.availabilities %}
+                        <li>{{ time_slot }}</li>  <!-- This will call the __str__ method of TimeSlot -->
                         {% endfor %}
                     </ul>
                 </td>
