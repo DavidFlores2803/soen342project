@@ -9,7 +9,9 @@
             <nav>
                 <h2><a href="/">Home</a></h2>
                 <ul>
-                    <li><a href="/offerings">Offerings</a></li>
+                    {% if session.get('accountType') == 'instructor' %}
+                        <li><a href="/offerings">Offerings</a></li>
+                    {% endif %}
                 </ul>
             </nav>
             {% if session.get('currentAccount') %}

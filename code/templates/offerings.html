@@ -5,12 +5,12 @@
         <thead>
             <tr>
                 <th>ID</th>
-                <th>Lesson Name</th>
-                <th>Lesson Type</th>
-                <th>Lesson Duration</th>
-                <th>Location Name</th>
-                <th>Location City</th>
-                <th>Time Slots</th>
+                <th>Lesson</th>
+                <th>Type</th>
+                <th>Duration</th>
+                <th>Location</th>
+                <th>City</th>
+                <th>Time Slots (Availability)</th>
             </tr>
         </thead>
         <tbody>
@@ -24,9 +24,18 @@
                 <td>{{ offering.location.city }}</td>
                 <td>
                     <ul>
-                        {% for time_slot in offering.availabilities %}
-                        <li>{{ time_slot }}</li>  <!-- This will call the __str__ method of TimeSlot -->
+                        {% for availability in offering.availabilities %}
+                            <li>
+                                {{ availability }}
+                                {% if availability.isAvailable %}
+                                {% endif %}
+                                <form action="{{ url_for('take_offering') }}" method="post" style="display:inline;">
+                                    <input type="hidden" name="offering_id" value="{{ offering.id }}">
+                                    <input type="hidden" name="time_slot" value="{{ availability.timeSlot }}">
+                                    <button type="submit">Take Offering</button>
+                                </form>
                         {% endfor %}
+                            </li>
                     </ul>
                 </td>
             </tr>
