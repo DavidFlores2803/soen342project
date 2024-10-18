@@ -14,8 +14,7 @@ INSTRUCTOR = "instructor"
 CLIENT = "client"
 
 offeringsController = OfferingsController()
-generatedOfferings = False
-offerings = list()
+offerings_list = list()
 classes_offered_list = list()
 
 @app.route("/")
@@ -53,14 +52,11 @@ def logout():
     
 @app.route("/offerings")
 def offerings():
-    global generatedOfferings
-
     #TODO redirect to home if not logged in as instructor
-    if not generatedOfferings:
+    if len(offerings_list) == 0:
         generateOfferings()
-        generatedOfferings = True
 
-    return render_template("offerings.html", offerings=offerings)
+    return render_template("offerings.html", offerings=offerings_list)
 
 @app.route('/take_offering', methods=['POST'])
 def take_offering():
@@ -68,12 +64,12 @@ def take_offering():
     offering_id = int(request.form.get('offering_id'))
     time_slot = TimeSlot.stringToObj(request.form.get('time_slot'))
     
-    offerings[offering_id].takeAvailability(time_slot)
+    offerings_list[offering_id].takeAvailability(time_slot)
     
     #TODO show available classes to clients and taken classes to instructors
     offeredClass = OfferedClass(
-        location=offerings[offering_id].location,
-        lesson=offerings[offering_id].lesson,
+        location=offerings_list[offering_id].location,
+        lesson=offerings_list[offering_id].lesson,
         date=time_slot.day,
         timeSlot=time_slot,
         instructor=session['currentAccount']['name']
@@ -87,7 +83,7 @@ def classes_offered():
     return render_template('classes_offered.html', offered_classes=classes_offered_list)
 
 def generateOfferings():
-    global offerings
+    global offerings_list
 
     # Create sample locations
     location1 = Location("EV Building", "Montreal")
@@ -121,7 +117,7 @@ def generateOfferings():
     music_availabilities = [Availability(slot, now, one_month_from_now) for slot in music_time_slots]
 
     # Create a list of offerings with different locations and availabilities
-    offerings = [
+    genericOfferings = [
         Offering(0, math_lesson, location1, math_availabilities),
         Offering(1, science_lesson, location2, science_availabilities),
         Offering(2, history_lesson, location3, history_availabilities),
@@ -129,8 +125,7 @@ def generateOfferings():
         Offering(4, music_lesson, location5, music_availabilities),
     ]
 
-    test = Offering(0, math_lesson, location1, math_availabilities)
-    test.availabilities[0].timeSlot
+    offerings_list.extend(genericOfferings)
 
 if __name__ == "__main__":
     app.run()
