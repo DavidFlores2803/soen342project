@@ -1,5 +1,3 @@
-import datetime
-
 class Availability:
     def __init__(self, timeSlot, startDate, endDate):
         self.timeSlot = timeSlot

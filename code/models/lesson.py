@@ -3,3 +3,6 @@ class Lesson:
         self.name = name
         self.type = type
         self.duration = duration
+
+    def __str__(self):
+        return f"{self.name}, {self.type}, {self.duration}"

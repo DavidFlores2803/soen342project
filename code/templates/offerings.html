@@ -28,12 +28,12 @@
                             <li>
                                 {{ availability }}
                                 {% if availability.isAvailable %}
-                                {% endif %}
                                 <form action="{{ url_for('take_offering') }}" method="post" style="display:inline;">
                                     <input type="hidden" name="offering_id" value="{{ offering.id }}">
                                     <input type="hidden" name="time_slot" value="{{ availability.timeSlot }}">
                                     <button type="submit">Take Offering</button>
                                 </form>
+                                {% endif %}
                         {% endfor %}
                             </li>
                     </ul>

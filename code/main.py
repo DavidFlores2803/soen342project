@@ -14,12 +14,11 @@ INSTRUCTOR = "instructor"
 CLIENT = "client"
 
 offeringsController = OfferingsController()
-
+generatedOfferings = False
+offerings = list()
 
 @app.route("/")
 def home():
-    if("currentAccount" in session):
-        print(f"worked {session['currentAccount']['name']}")
     return render_template("index.html")
 
 @app.route("/instructor_login", methods=["POST", "GET"])
@@ -50,25 +49,41 @@ def instructor_login():
 def logout():
     session.clear()
     return redirect(url_for("home"))
-
     
 @app.route("/offerings")
 def offerings():
+    global generatedOfferings
+
     #TODO redirect to home if not logged in as instructor
-    return render_template("offerings.html", offerings=generateOfferings())
+    if not generatedOfferings:
+        generateOfferings()
+        generatedOfferings = True
+
+    return render_template("offerings.html", offerings=offerings)
 
 @app.route('/take_offering', methods=['POST'])
 def take_offering():
-    offering_id = request.form.get('offering_id')
-    time_slot = request.form.get('time_slot')
-
-    print(f"you took the time slot {time_slot} for offering #{offering_id}")
-
-    #TODO add take offering logic
+    #TODO id is NOT EQUAL to arr index add a findOffering(id) method
+    offering_id = int(request.form.get('offering_id'))
+    time_slot = TimeSlot.stringToObj(request.form.get('time_slot'))
+    
+    offerings[offering_id].takeAvailability(time_slot)
+    
+    #TODO show available classes to clients and taken classes to instructors
+    offeredClass = OfferedClass(
+        location=offerings[offering_id].location,
+        lesson=offerings[offering_id].lesson,
+        date=time_slot.day,
+        timeSlot=time_slot,
+        instructor=session['currentAccount']['name']
+    )
+    print(offeredClass)
 
     return redirect(url_for('home'))
 
 def generateOfferings():
+    global offerings
+
     # Create sample locations
     location1 = Location("EV Building", "Montreal")
     location2 = Location("Engineering Building", "Los Angeles")
@@ -101,17 +116,16 @@ def generateOfferings():
     music_availabilities = [Availability(slot, now, one_month_from_now) for slot in music_time_slots]
 
     # Create a list of offerings with different locations and availabilities
-    offerings_list = [
-        Offering(1, math_lesson, location1, math_availabilities),
-        Offering(2, science_lesson, location2, science_availabilities),
-        Offering(3, history_lesson, location3, history_availabilities),
-        Offering(4, art_lesson, location4, art_availabilities),
-        Offering(5, music_lesson, location5, music_availabilities),
+    offerings = [
+        Offering(0, math_lesson, location1, math_availabilities),
+        Offering(1, science_lesson, location2, science_availabilities),
+        Offering(2, history_lesson, location3, history_availabilities),
+        Offering(3, art_lesson, location4, art_availabilities),
+        Offering(4, music_lesson, location5, music_availabilities),
     ]
 
-    return offerings_list
-
-
+    test = Offering(0, math_lesson, location1, math_availabilities)
+    test.availabilities[0].timeSlot
 
 if __name__ == "__main__":
     app.run()
