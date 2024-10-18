@@ -11,9 +11,9 @@ class OfferingsController():
         return self.offerings
 
     def addOffering(self, lesson, location, availabilities):
-        offering = Offering(id, lesson, location, availabilities)
+        offering = Offering(OfferingsController.id, lesson, location, availabilities)
         self.offerings.append(offering)
-        id += 1
+        OfferingsController.id += 1
         return offering.id
     
     def generateDefaultOffering(self):
