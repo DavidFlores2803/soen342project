@@ -1,0 +1,63 @@
+/* font */
+* {
+    font-family: "Montserrat", sans-serif;
+}
+
+li, a, button{
+    font-family: "Montserrat", sans-serif;
+}
+
+/* navbar styling */
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #333;
+    padding: 10px;
+}
+
+nav h2, nav ul, .right-section {
+    margin: 0;
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    gap: 15px; /* Add space between the list items */
+    margin-left: 20px; /* Add space between Home and the list */
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+}
+
+/* right section styling */
+.right-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* table styling */
+
+li {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    border: 1px solid black;
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background-color:lightgray;
+}
