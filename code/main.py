@@ -76,11 +76,15 @@ def take_offering():
     )
     classes_offered_list.append(offeredClass)
 
-    return redirect(url_for('home'))
+    return redirect(url_for('instructor_account'))
 
 @app.route('/classes_offered')
 def classes_offered():
     return render_template('classes_offered.html', offered_classes=classes_offered_list)
+
+@app.route('/instructor_account')
+def instructor_account():
+    return render_template('instructor_account.html', my_classes=getClassesForInstructor(session['currentAccount']['name']))
 
 def generateOfferings():
     global offerings_list
@@ -126,6 +130,15 @@ def generateOfferings():
     ]
 
     offerings_list.extend(genericOfferings)
+
+def getClassesForInstructor(name):
+    #TODO should match on id not on name
+    list_of_classes = []
+    for class_offered in classes_offered_list:
+        if class_offered.instructor == name:
+            list_of_classes.append(class_offered)
+
+    return list_of_classes
 
 if __name__ == "__main__":
     app.run()

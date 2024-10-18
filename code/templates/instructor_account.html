@@ -1,0 +1,40 @@
+{% include 'header.html' %}
+
+<style>
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    th, td {
+        border: 1px solid black;
+        padding: 8px;
+        text-align: left;
+    }
+    th {
+        background-color: #f2f2f2;
+    }
+</style>
+
+    <h1>Your Classes</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Location</th>
+                <th>Lesson</th>
+                <th>Date</th>
+                <th>Time Slot</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for offered_class in my_classes %}
+            <tr>
+                <td>{{ offered_class.location.name }}</td>
+                <td>{{ offered_class.lesson.name }}</td>
+                <td>{{ offered_class.date }}</td>
+                <td>{{ offered_class.timeSlot }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
