@@ -56,6 +56,20 @@ class Administrator:
             return offering_list
 
         return None
+    
+    def deleteAccount(self, account_type, account_username):
+        if account_type == "client":
+            for client in self.clients:
+                if client.username == account_username:
+                    self.clients.remove(client)
+        elif account_type == "instructor":
+            for instructor in self.instructors:
+                if instructor.username == instructor:
+                    self.instructors.remove(instructor)
+        else:
+            print("Error with account type")
+
+
 
     
 

@@ -25,11 +25,14 @@
                     <p style="color: white;">Welcome, {{ session['currentAccount']['name'] }}
                         {% if session.get('accountType') == 'instructor' %}
                         <a href="{{ url_for('instructor_account') }}"><button>Your account </button></a>
+                        {% elif session.get('accountType') == 'admin' %}
+                        <a href="{{ url_for('admin_account') }}"><button>Your account </button></a>
                         {% endif %}
                     </p>
                     <a href="{{ url_for('logout') }}"><button>Logout</button></a>
                     {% else %}
                     <a href="/instructor_login"><button>Instructor log in</button></a>
+                    <a href="/admin_login"><button>Admin log in</button></a>
                     {% endif %}
                 </div>
             </nav>

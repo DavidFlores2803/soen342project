@@ -45,6 +45,28 @@ def instructor_login():
     else:
         return render_template("instructor_login.html")
     
+@app.route("/admin_login", methods=["POST", "GET"])
+def admin_login():
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+        
+        
+        if username == "admin" and password == "password":  
+            session["currentAccount"] = {
+                "username": username,
+                "password": password,
+            }
+            session["accountType"] = ADMIN
+
+            # Redirect to admin account page
+            return redirect(url_for("home"))
+        else:
+            error = "Invalid credentials. Please try again."
+            return render_template("admin_login.html", error=error)
+    else:
+        return render_template("admin_login.html")
+
 @app.route("/logout")
 def logout():
     session.clear()
@@ -85,6 +107,10 @@ def classes_offered():
 @app.route('/instructor_account')
 def instructor_account():
     return render_template('instructor_account.html', my_classes=getClassesForInstructor(session['currentAccount']['name']))
+
+@app.route('/admin_account')
+def admin_account():
+    return render_template('admin_account.html', offered_classes=classes_offered_list)
 
 def generateOfferings():
     global offerings_list

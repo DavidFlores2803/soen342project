@@ -1,0 +1,25 @@
+{% include 'header.html' %}
+
+    <h1>All Offerings</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Location</th>
+                <th>Lesson</th>
+                <th>Date</th>
+                <th>Time Slot</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for offered_class in offered_classes %}
+            <tr>
+                <td>{{ offered_class.location.name }}</td>
+                <td>{{ offered_class.lesson.name }}</td>
+                <td>{{ offered_class.date.name }}</td>
+                <td>{{ offered_class.timeSlot }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
