@@ -16,6 +16,7 @@ CLIENT = "client"
 offeringsController = OfferingsController()
 generatedOfferings = False
 offerings = list()
+classes_offered_list = list()
 
 @app.route("/")
 def home():
@@ -77,9 +78,13 @@ def take_offering():
         timeSlot=time_slot,
         instructor=session['currentAccount']['name']
     )
-    print(offeredClass)
+    classes_offered_list.append(offeredClass)
 
     return redirect(url_for('home'))
+
+@app.route('/classes_offered')
+def classes_offered():
+    return render_template('classes_offered.html', offered_classes=classes_offered_list)
 
 def generateOfferings():
     global offerings
