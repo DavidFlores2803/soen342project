@@ -2,6 +2,7 @@ from flask import Flask, redirect, url_for, request, render_template, session
 from enums.DayOfTheWeek import DayOfTheWeek
 from controllers import OfferingsController
 from models import *
+from models.administrator import Administrator
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
@@ -100,6 +101,22 @@ def take_offering():
 
     return redirect(url_for('instructor_account'))
 
+@app.route('/delete_offering', methods=['POST'])
+def delete_offering():
+    offering_id = int(request.form.get('offering_id'))
+
+    # Create an instance of Administrator with appropriate credentials
+    admin = Administrator("admin", "password")
+
+    # Call the delete method
+    success = admin.deleteOffering(offering_id)
+
+    if success:
+        return redirect(url_for('admin_account'))
+    else:
+        return "Offering not found", 404
+
+
 @app.route('/classes_offered')
 def classes_offered():
     return render_template('classes_offered.html', offered_classes=classes_offered_list)
@@ -110,7 +127,12 @@ def instructor_account():
 
 @app.route('/admin_account')
 def admin_account():
-    return render_template('admin_account.html', offered_classes=classes_offered_list)
+    if not offeringsController.offerings:
+        generateOfferings() 
+
+    # Retrieve the offerings list from the offeringsController
+    offers = offeringsController.offerings
+    return render_template('admin_account.html', offered_classes=offers)
 
 def generateOfferings():
     global offerings_list
@@ -156,6 +178,11 @@ def generateOfferings():
     ]
 
     offerings_list.extend(genericOfferings)
+    offeringsController.addOffering(math_lesson, location1, math_availabilities)
+    offeringsController.addOffering(science_lesson, location2, science_availabilities)
+    offeringsController.addOffering(history_lesson, location3, history_availabilities)
+    offeringsController.addOffering(art_lesson, location4, art_availabilities)
+    offeringsController.addOffering(music_lesson, location5, music_availabilities)
 
 def getClassesForInstructor(name):
     #TODO should match on id not on name

@@ -4,22 +4,37 @@
     <table>
         <thead>
             <tr>
-                <th>Location</th>
+                <th>ID</th>
                 <th>Lesson</th>
-                <th>Date</th>
-                <th>Time Slot</th>
+                <th>Type</th>
+                <th>Duration</th>
+                <th>Location</th>
+                <th>City</th>
+                <th>Time Slots</th>
             </tr>
         </thead>
         <tbody>
-            {% for offered_class in offered_classes %}
+            {% for offering in offered_classes %}
             <tr>
-                <td>{{ offered_class.location.name }}</td>
-                <td>{{ offered_class.lesson.name }}</td>
-                <td>{{ offered_class.date.name }}</td>
-                <td>{{ offered_class.timeSlot }}</td>
+                <td>{{ offering.id }}</td>
+                <td>{{ offering.lesson.name }}</td>
+                <td>{{ offering.lesson.type }}</td>
+                <td>{{ offering.lesson.duration }}</td>
+                <td>{{ offering.location.name }}</td>
+                <td>{{ offering.location.city }}</td>
+                <td>
+                    <ul>
+                            <li>
+                                <form action="{{ url_for('delete_offering') }}" method="post" style="display:inline;">
+                                    <input type="hidden" name="offering_id" value="{{ offering.id }}">
+                                    <button type="submit">Delete Offering</button>
+                                </form>
+                            </li>
+                    </ul>
+                </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-</body>
+    </body>
 </html>

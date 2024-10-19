@@ -1,4 +1,4 @@
-from controllers.offeringsController import OfferingController
+from controllers.offeringsController import OfferingsController
 from models.instructor import Instructor
 from models.client import Client
 
@@ -6,7 +6,7 @@ class Administrator:
     def __init__(self, username, password):
         self.username = username
         self.password = password
-        self.offerings_controller = OfferingController()
+        self.offerings_controller = OfferingsController()
         self.clients = []
         self.instructors = []
     
@@ -35,27 +35,39 @@ class Administrator:
     3. Can delete/add a client account
 
     4. can delete/add an instructor account
+
+
+    Temporary -> delete from list
+    Future -> delete from DB
     
     """
     def addClient(self, client):
         self.clients.append(client)
+
     def addInstructor(self, instructor):
         self.instructors.append(instructor)
+
     def addOffering(self, lesson, location, availabilities):
         new_offering_id = self.offerings_controller.addOfferring(lesson, location, availabilities)
         return new_offering_id
-
+    
     def deleteOffering(self, id):
-        #find the offering in the list of offerings with the specific id
-        #delete it from the list
         offering_list = self.offerings_controller.getOfferings()
-
-        for i in offering_list:
-            if i == id:
-                offering_list.remove(id)
+        
+        offering_to_delete = None
+        for offering in offering_list:
+                if offering.id == id:
+                    offering_to_delete = offering
+                break
+    
+        
+        if offering_to_delete:
+            offering_list.remove(offering_to_delete)
             return offering_list
-
-        return None
+        else:
+            print("Offering not found")
+            return None
+   
     
     def deleteAccount(self, account_type, account_username):
         if account_type == "client":
@@ -70,6 +82,7 @@ class Administrator:
             print("Error with account type")
 
 
+   
 
     
 
