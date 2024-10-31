@@ -22,6 +22,30 @@ classes_offered_list = list()
 def home():
     return render_template("index.html")
 
+@app.route("/client_login", methods=["POST", "GET"])
+def client_login():
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+        name = request.form["name"]
+        number = request.form["number"]
+        age = request.form["age"]
+        
+        session["currentAccount"] = {
+            "username": username,
+            "password": password,
+            "name": name,
+            "number": number,
+            "age": age
+        }
+
+        session["accountType"] = CLIENT
+
+        #TODO redirect to user page instead
+        return redirect(url_for("home"))
+    else:
+        return render_template("client_login.html")
+
 @app.route("/instructor_login", methods=["POST", "GET"])
 def instructor_login():
     if request.method == "POST":

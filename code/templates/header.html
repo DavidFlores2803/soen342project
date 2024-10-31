@@ -16,11 +16,11 @@
                     <ul>
                         {% if session.get('accountType') == 'instructor' %}
                             <li><a href="/offerings">Offerings</a></li>
-                            <li><a href="/classes_offered">Classes</a></li>
-                        {% endif %}
-                        {% if session.get('accountType') == 'admin' %}
+                            {% endif %}
+                            {% if session.get('accountType') == 'admin' %}
                             <li><a href="/admin_account">Offerings</a></li>
-                        {% endif %}
+                            {% endif %}
+                            <li><a href="/classes_offered">Classes</a></li>
                     </ul>
                 </div>
                 <div class="right-section">
@@ -32,6 +32,7 @@
                     </p>
                     <a href="{{ url_for('logout') }}"><button>Logout</button></a>
                     {% else %}
+                    <a href="/client_login"><button>Client log in</button></a>
                     <a href="/instructor_login"><button>Instructor log in</button></a>
                     <a href="/admin_login"><button>Admin log in</button></a>
                     {% endif %}
