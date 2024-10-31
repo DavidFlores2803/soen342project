@@ -1,5 +1,6 @@
 class OfferedClass:
-    def __init__(self, location, lesson, date, timeSlot, instructor):
+    def __init__(self, id, location, lesson, date, timeSlot, instructor):
+        self.id = id
         self.location = location
         self.lesson = lesson
         self.date = date

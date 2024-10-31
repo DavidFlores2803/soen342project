@@ -9,6 +9,7 @@
                 <th>Date</th>
                 <th>Time Slot</th>
                 <th>Instructor</th>
+                <th>Book Class</th>
             </tr>
         </thead>
         <tbody>
@@ -19,6 +20,12 @@
                 <td>{{ offered_class.date.name }}</td>
                 <td>{{ offered_class.timeSlot }}</td>
                 <td>{{ offered_class.instructor }}</td>
+                <td>
+                    <form action="{{ url_for('book_class') }}" method="post" style="display:inline;">
+                        <input type="hidden" name="id" value="{{ offered_class.id }}">
+                        <button type="submit">Book Class</button>
+                    </form>
+                </td>
             </tr>
             {% endfor %}
         </tbody>

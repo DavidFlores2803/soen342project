@@ -14,9 +14,12 @@ ADMIN = "admin"
 INSTRUCTOR = "instructor"
 CLIENT = "client"
 
+classID = 0
+
 offeringsController = OfferingsController()
 offerings_list = list()
 classes_offered_list = list()
+classes_taken_list = list()
 
 @app.route("/")
 def home():
@@ -107,6 +110,8 @@ def offerings():
 
 @app.route('/take_offering', methods=['POST'])
 def take_offering():
+    global classID
+
     #TODO id is NOT EQUAL to arr index add a findOffering(id) method
     offering_id = int(request.form.get('offering_id'))
     time_slot = TimeSlot.stringToObj(request.form.get('time_slot'))
@@ -115,15 +120,36 @@ def take_offering():
     
     #TODO show available classes to clients and taken classes to instructors
     offeredClass = OfferedClass(
+        id = classID, 
         location=offerings_list[offering_id].location,
         lesson=offerings_list[offering_id].lesson,
         date=time_slot.day,
         timeSlot=time_slot,
         instructor=session['currentAccount']['name']
     )
+    classID += 1
     classes_offered_list.append(offeredClass)
 
     return redirect(url_for('instructor_account'))
+
+@app.route('/book_class', methods=['POST'])
+def book_class():
+    id = int(request.form.get('id'))
+
+    #TODO customer id should be id instead of name
+    classes_taken_list.append(
+        ClassTaken(
+            customer_id = session["currentAccount"]["name"],
+            class_id = id
+        ))
+
+    return redirect(url_for("classes_offered"))
+
+def get_by_id(list, id):
+    for item in list:
+        if item.id == id:
+            return item
+    return None
 
 @app.route('/delete_offering', methods=['POST'])
 def delete_offering():
@@ -144,6 +170,17 @@ def delete_offering():
 @app.route('/classes_offered')
 def classes_offered():
     return render_template('classes_offered.html', offered_classes=classes_offered_list)
+
+@app.route('/client_account')
+def client_account():
+    client_classes = list()
+    for aclass in classes_taken_list:
+        if aclass.customer_id == session["currentAccount"]["name"]:
+            class_taken = get_by_id(classes_offered_list, aclass.class_id)
+            if class_taken is not None:
+                client_classes.append(class_taken)
+
+    return render_template('client_account.html', classes_taken=client_classes)
 
 @app.route('/instructor_account')
 def instructor_account():

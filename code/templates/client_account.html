@@ -1,0 +1,27 @@
+{% include 'header.html' %}
+
+    <h1>Your booked classes</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Location</th>
+                <th>Lesson</th>
+                <th>Date</th>
+                <th>Time Slot</th>
+                <th>Instructor</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for class in classes_taken %}
+            <tr>
+                <td>{{ class.location.name }}</td>
+                <td>{{ class.lesson.name }}</td>
+                <td>{{ class.date.name }}</td>
+                <td>{{ class.timeSlot }}</td>
+                <td>{{ class.instructor }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

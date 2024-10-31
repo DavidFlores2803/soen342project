@@ -26,8 +26,11 @@
                 <div class="right-section">
                     {% if session.get('currentAccount') %}
                     <p style="color: white;">Welcome, {{ session['currentAccount']['name'] }}
+                        {% if session.get('accountType') == 'client' %}
+                        <a href="{{ url_for('client_account') }}"><button>Your account</button></a>
+                        {% endif %}
                         {% if session.get('accountType') == 'instructor' %}
-                        <a href="{{ url_for('instructor_account') }}"><button>Your account </button></a>
+                        <a href="{{ url_for('instructor_account') }}"><button>Your account</button></a>
                         {% endif %}
                     </p>
                     <a href="{{ url_for('logout') }}"><button>Logout</button></a>
