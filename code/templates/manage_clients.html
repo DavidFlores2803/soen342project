@@ -1,0 +1,22 @@
+{% include 'header.html' %}
+<h1>Manage Clients</h1>
+    <table>
+        <tr>
+            <th>Username</th>
+            <th>Actions</th>
+        </tr>
+        {% for client in clients %}
+        <tr>
+            <td>{{ client.username }}</td>
+            <td>
+                <form action="/manage_clients" method="post">
+                    <input type="hidden" name="username" value="{{ client.username }}">
+                    <button type="submit">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    <a href="{{ url_for('admin_account') }}">Back to Admin Account</a>
+</body>
+</html>

@@ -1,6 +1,8 @@
 {% include 'header.html' %}
 
-    <h1>All Offerings</h1>
+    <h1>All Offerings
+        <a href="{{ url_for('create_offering') }}"><button>Create New Offering </button></a>
+    </h1>
     <table>
         <thead>
             <tr>
@@ -11,6 +13,7 @@
                 <th>Location</th>
                 <th>City</th>
                 <th>Time Slots</th>
+                <th>Delete Offering</th>
             </tr>
         </thead>
         <tbody>
@@ -22,6 +25,15 @@
                 <td>{{ offering.lesson.duration }}</td>
                 <td>{{ offering.location.name }}</td>
                 <td>{{ offering.location.city }}</td>
+                <td>
+                    <ul>
+                        <!-- Loop through the availabilities and display each time slot -->
+                        {% for availability in offering.availabilities %}
+                            <li>{{ availability.timeSlot.day.name }}: {{ availability.timeSlot.startTime }} - {{ availability.timeSlot.endTime }}</li>
+                        {% endfor %}
+                    </ul>
+                    
+                </td>
                 <td>
                     <ul>
                             <li>
