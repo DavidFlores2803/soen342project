@@ -165,6 +165,36 @@ def admin_account():
     offers = offeringsController.getOfferings()
     return render_template('admin_account.html', offered_classes=offers)
 
+admin = Administrator("admin", "password")  # Initialize once
+
+@app.route('/manage_instructors', methods=['GET', 'POST'])
+def manage_instructors():
+    if session.get("accountType") == ADMIN:
+        instructors = admin.instructors 
+
+        if request.method == 'POST':
+            account_username = request.form.get('username')
+            admin.deleteAccount("instructor", account_username)
+            return redirect(url_for('manage_instructors'))
+
+        return render_template('manage_instructors.html', instructors=instructors)
+    else:
+        return redirect(url_for("home"))
+
+@app.route('/manage_clients', methods=['GET', 'POST'])
+def manage_clients():
+    if session.get("accountType") == ADMIN:
+        clients = admin.clients 
+
+        if request.method == 'POST':
+            account_username = request.form.get('username')
+            admin.deleteAccount("client", account_username)
+            return redirect(url_for('manage_clients'))
+
+        return render_template('manage_clients.html', clients=clients)
+    else:
+        return redirect(url_for("home"))
+
 def generateOfferings():
     global offerings_list
 
