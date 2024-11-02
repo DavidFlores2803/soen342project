@@ -105,7 +105,7 @@ def take_offering():
 def delete_offering():
     offering_id = int(request.form.get('offering_id'))
 
-    # Create an instance of Administrator with appropriate credentials
+    
     admin = Administrator("admin", "password")
 
     # Call the delete method
@@ -116,7 +116,37 @@ def delete_offering():
     else:
         return "Offering not found", 404
 
+@app.route('/create_offering', methods=['GET', 'POST'])
+def create_offering():
+    if session.get("accountType") == ADMIN:
+        if request.method == 'POST':
+            lesson_name = request.form['lesson']
+            lesson_type = request.form['type']
+            duration = request.form['duration']
+            location_name = request.form['location_name']
+            location_city = request.form['location_city']
+            day = request.form['day'].upper()
+            start_time = int(request.form['start_time'])
+            end_time = int(request.form['end_time'])
 
+            lesson = Lesson(lesson_name, lesson_type, duration)
+            location = Location(location_name, location_city)
+            time_slot = TimeSlot(DayOfTheWeek[day], start_time, end_time)
+            now = datetime.now()
+            one_month_from_now = now + relativedelta(months=1)
+            availability = Availability(time_slot, now, one_month_from_now)
+
+            admin = Administrator("admin", "password")
+            admin.addOffering(lesson, location, [availability])
+
+            offerings_list.append(Offering(offeringsController.id, lesson, location, [availability]))
+            return redirect(url_for('admin_account'))
+        else:
+            return render_template('create_offering.html')  
+    else:
+        return redirect(url_for("home"))
+
+    
 @app.route('/classes_offered')
 def classes_offered():
     return render_template('classes_offered.html', offered_classes=classes_offered_list)
@@ -129,13 +159,18 @@ def instructor_account():
 def admin_account():
     if not offeringsController.offerings:
         generateOfferings() 
+        offeringsController.offerings = offerings_list
 
-    # Retrieve the offerings list from the offeringsController
-    offers = offeringsController.offerings
+    
+    offers = offeringsController.getOfferings()
     return render_template('admin_account.html', offered_classes=offers)
 
 def generateOfferings():
     global offerings_list
+
+    
+    if offerings_list:
+        return
 
     # Create sample locations
     location1 = Location("EV Building", "Montreal")
@@ -144,32 +179,33 @@ def generateOfferings():
     location4 = Location("Art Center", "San Francisco")
     location5 = Location("Music Hall", "Seattle")
 
-    # Create sample lessons
+    
     math_lesson = Lesson("Mathematics", "Online", "1 hour")
     science_lesson = Lesson("Science", "In-Person", "1.5 hours")
     history_lesson = Lesson("History", "Online", "2 hours")
     art_lesson = Lesson("Art", "In-Person", "2 hours")
     music_lesson = Lesson("Music", "Online", "30 minutes")
 
-    # Create sample time slots and availabilities
+    
     now = datetime.now()
-    one_month_from_now = now + relativedelta(month=1)
+    one_month_from_now = now + relativedelta(months=1)
 
-
+    
     math_time_slots = [TimeSlot(DayOfTheWeek.MONDAY, 10, 15), TimeSlot(DayOfTheWeek.WEDNESDAY, 14, 18)]
     science_time_slots = [TimeSlot(DayOfTheWeek.TUESDAY, 13, 19), TimeSlot(DayOfTheWeek.THURSDAY, 15, 21)]
     history_time_slots = [TimeSlot(DayOfTheWeek.FRIDAY, 9, 15), TimeSlot(DayOfTheWeek.SATURDAY, 12, 18)]
     art_time_slots = [TimeSlot(DayOfTheWeek.MONDAY, 11, 17), TimeSlot(DayOfTheWeek.THURSDAY, 13, 17)]
     music_time_slots = [TimeSlot(DayOfTheWeek.WEDNESDAY, 10, 12.5), TimeSlot(DayOfTheWeek.FRIDAY, 17, 22)]
 
+   
     math_availabilities = [Availability(slot, now, one_month_from_now) for slot in math_time_slots]
     science_availabilities = [Availability(slot, now, one_month_from_now) for slot in science_time_slots]
     history_availabilities = [Availability(slot, now, one_month_from_now) for slot in history_time_slots]
     art_availabilities = [Availability(slot, now, one_month_from_now) for slot in art_time_slots]
     music_availabilities = [Availability(slot, now, one_month_from_now) for slot in music_time_slots]
 
-    # Create a list of offerings with different locations and availabilities
-    genericOfferings = [
+   
+    sample_offerings = [
         Offering(0, math_lesson, location1, math_availabilities),
         Offering(1, science_lesson, location2, science_availabilities),
         Offering(2, history_lesson, location3, history_availabilities),
@@ -177,12 +213,11 @@ def generateOfferings():
         Offering(4, music_lesson, location5, music_availabilities),
     ]
 
-    offerings_list.extend(genericOfferings)
-    offeringsController.addOffering(math_lesson, location1, math_availabilities)
-    offeringsController.addOffering(science_lesson, location2, science_availabilities)
-    offeringsController.addOffering(history_lesson, location3, history_availabilities)
-    offeringsController.addOffering(art_lesson, location4, art_availabilities)
-    offeringsController.addOffering(music_lesson, location5, music_availabilities)
+    
+    offerings_list.extend(sample_offerings)
+    for offering in sample_offerings:
+        offeringsController.addOffering(offering.lesson, offering.location, offering.availabilities)
+
 
 def getClassesForInstructor(name):
     #TODO should match on id not on name

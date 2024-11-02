@@ -1,0 +1,32 @@
+{% include 'header.html' %}
+
+<form action="{{ url_for('create_offering') }}" method="post">
+    <p>Lesson Name:</p>
+    <input type="text" name="lesson" required>
+
+    <p>Lesson Type:</p>
+    <input type="text" name="type" required>
+
+    <p>Lesson Duration:</p>
+    <input type="text" name="duration" required>
+
+    <p>Location Name:</p>
+    <input type="text" name="location_name" required>
+
+    <p>Location City:</p>
+    <input type="text" name="location_city" required>
+
+    <p>Day of the Week (e.g., "Monday"):</p>
+    <input type="text" name="day" required>
+
+    <p>Start Time (e.g., "10"):</p>
+    <input type="text" name="start_time" required>
+
+    <p>End Time (e.g., "12"):</p>
+    <input type="text" name="end_time" required>
+
+    <input type="submit" value="Create Offering">
+</form>
+
+    </body>
+</html>

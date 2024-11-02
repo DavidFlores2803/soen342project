@@ -29,4 +29,4 @@ class OfferingsController():
         one_month_from_now = now + relativedelta(month=1)
         avail = Availability(ts, datetime.now(), one_month_from_now)
 
-        self.addOffering(lesson, location, avail)
+        self.addOffering(lesson, location, [avail])

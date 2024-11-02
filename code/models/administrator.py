@@ -48,7 +48,7 @@ class Administrator:
         self.instructors.append(instructor)
 
     def addOffering(self, lesson, location, availabilities):
-        new_offering_id = self.offerings_controller.addOfferring(lesson, location, availabilities)
+        new_offering_id = self.offerings_controller.addOffering(lesson, location, availabilities)
         return new_offering_id
     
     def deleteOffering(self, id):
