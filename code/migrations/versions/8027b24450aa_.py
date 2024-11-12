@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: b3498d7bfded
+Revision ID: 8027b24450aa
 Revises: 
-Create Date: 2024-11-11 21:03:29.513745
+Create Date: 2024-11-12 12:43:08.626371
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'b3498d7bfded'
+revision = '8027b24450aa'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -41,19 +41,11 @@ def upgrade():
     sa.Column('name', sa.Text(), nullable=False),
     sa.Column('age', sa.Integer(), nullable=False),
     sa.Column('username', sa.String(length=128), nullable=False),
+    sa.Column('specialization', sa.String(length=128), nullable=True),
     sa.Column('phone', sa.String(length=128), nullable=False),
     sa.Column('password_hash', sa.String(length=128), nullable=False),
     sa.PrimaryKeyConstraint('instructor_id'),
     sa.UniqueConstraint('username')
-    )
-    op.create_table('lessons',
-    sa.Column('lesson_id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('name', sa.String(length=100), nullable=False),
-    sa.Column('lesson_type', sa.String(length=50), nullable=False),
-    sa.Column('description', sa.String(length=255), nullable=False),
-    sa.Column('capacity', sa.Integer(), nullable=False),
-    sa.PrimaryKeyConstraint('lesson_id'),
-    sa.UniqueConstraint('name')
     )
     op.create_table('locations',
     sa.Column('location_id', sa.Integer(), autoincrement=True, nullable=False),
@@ -61,6 +53,18 @@ def upgrade():
     sa.Column('city', sa.String(length=128), nullable=False),
     sa.Column('address', sa.String(length=255), nullable=False),
     sa.PrimaryKeyConstraint('location_id')
+    )
+    op.create_table('lessons',
+    sa.Column('lesson_id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('name', sa.String(length=100), nullable=False),
+    sa.Column('lesson_type', sa.String(length=50), nullable=False),
+    sa.Column('description', sa.String(length=255), nullable=False),
+    sa.Column('capacity', sa.Integer(), nullable=False),
+    sa.Column('is_available', sa.Boolean(), nullable=True),
+    sa.Column('location_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['location_id'], ['locations.location_id'], name='fk_location_id'),
+    sa.PrimaryKeyConstraint('lesson_id'),
+    sa.UniqueConstraint('name')
     )
     op.create_table('offerings',
     sa.Column('offering_id', sa.Integer(), autoincrement=True, nullable=False),
@@ -113,8 +117,8 @@ def downgrade():
     op.drop_table('bookings')
     op.drop_table('time_slots')
     op.drop_table('offerings')
-    op.drop_table('locations')
     op.drop_table('lessons')
+    op.drop_table('locations')
     op.drop_table('instructors')
     op.drop_table('clients')
     op.drop_table('admin')

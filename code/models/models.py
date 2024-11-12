@@ -31,12 +31,17 @@ class Client(db.Model):
     guardian_id = db.Column(db.Integer, db.ForeignKey('clients.client_id', name='fk_client_id'), nullable=True)
 
     guardian = db.relationship('Client', backref=db.backref('guardians', lazy=True), remote_side=[client_id])  
+
+    
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
     
+    def add_guardian(self, guardian_id):
+        self.guardian_id = guardian_id
+
     def __repr__(self):
         return f'Client with name {self.name}'
 
@@ -157,12 +162,17 @@ class Lesson(db.Model):
     lesson_time_slots = db.relationship('TimeSlot', back_populates='lesson', lazy=True)
     is_available = db.Column(db.Boolean, default=True)
 
-    def __init__(self, name, lesson_type, description, capacity, is_available=True):
+    location_id = db.Column(db.Integer, db.ForeignKey('locations.location_id', name='fk_location_id'), nullable=True)
+    location = db.relationship('Location', backref=db.backref('lessons', lazy=True))
+
+    def __init__(self, name, lesson_type, description, capacity, location, is_available=True):
         self.name = name
         self.lesson_type = lesson_type
         self.description = description
         self.capacity = capacity
+        self.location = location
         self.is_available = is_available
+        
        
     #temporary until figure out 
     def mark_as_available(self):
@@ -243,39 +253,21 @@ class Location(db.Model):
 class Schedule(db.Model):
     __tablename__ = 'schedules'
     schedule_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    schedule_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    day_of_week = db.Column(db.Enum(DayOfTheWeek), nullable=False)
-    start_time = db.Column(db.String(50), nullable=False)
-    end_time = db.Column(db.String(50), nullable=False)
     
-    lesson_id = db.Column(db.Integer, db.ForeignKey('lessons.lesson_id', name='lesson_id'), nullable=False)
-    instructor_id = db.Column(db.Integer, db.ForeignKey('instructors.instructor_id', name='instructor_id'), nullable=False)
-    location_id = db.Column(db.Integer, db.ForeignKey('locations.location_id', name='location_id'), nullable=False)
+    lesson_id = db.Column(db.Integer, db.ForeignKey('lessons.lesson_id', name='fk_lesson_id'), nullable=False)
     
     lesson = db.relationship('Lesson', backref=db.backref('schedules', lazy=True))
-    instructor = db.relationship('Instructor', backref=db.backref('schedules', lazy=True))
-    location = db.relationship('Location', backref=db.backref('schedules', lazy=True))
-
-    time_slot_id = db.Column(db.Integer, db.ForeignKey('time_slots.id', name='time_slots.id'), nullable=False)
+    
+    time_slot_id = db.Column(db.Integer, db.ForeignKey('time_slots.id', name='fk_time_slot_id'), nullable=False)
     time_slot = db.relationship('TimeSlot', backref=db.backref('schedules', lazy=True))
 
 
     def __repr__(self):
         return f'{self.lesson.lesson_type} on {self.day_of_week.name} from {self.start_time} to {self.end_time} at {self.location.name}'
-
-    def add_schedule(cls, lesson, instructor, location, day, start_time, end_time):
-        # Create a new schedule
-        new_schedule = Schedule(
-            lesson_id=lesson.lesson_id,
-            instructor_id=instructor.instructor_id,
-            location_id=location.location_id,
-            day_of_week=day,
-            start_time=start_time,
-            end_time=end_time
-        )
-        db.session.add(new_schedule)
-        db.session.commit()
-        return new_schedule
+    
+    def __init__(self, lesson, time_slot):
+        self.lesson = lesson
+        self.time_slot = time_slot
 
     @staticmethod
     def get_schedule_by_lesson(lesson_id):
@@ -333,7 +325,7 @@ class TimeSlot(db.Model):
 
     lesson = db.relationship('Lesson', back_populates='lesson_time_slots', lazy=True)
 
-    day_of_week = db.Column(db.Enum(DayOfTheWeek), nullable=False)
+    day_of_week = db.Column(db.String(50), nullable=False)
 
     def __init__(self, day_of_week, start_time, end_time, lesson_id,is_available=True):
         self.day_of_week = day_of_week

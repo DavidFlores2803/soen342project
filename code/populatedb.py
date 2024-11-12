@@ -1,12 +1,15 @@
 from app import db, create_app
-from models.models import Admin, Client, Instructor, Lesson, TimeSlot, Offering, Location
+from models.models import Admin, Client, Instructor, Lesson, TimeSlot, Offering, Location, Schedule, DayOfTheWeek
 from werkzeug.security import generate_password_hash
 from datetime import datetime
+
 
 def populate_database():
     clients_data = [
         {'name': 'Sydney Campbell', 'age': 21, 'username': 'syd', 'password': 'password100'},
         {'name': 'David Flores', 'age': 22, 'username': 'david', 'password': 'password101'},
+        {'name': 'Jimmy', 'age': 10, 'username': 'jim', 'password': 'password102', 'guardian_id': 1}
+
     ]
 
     admin_data = [
@@ -23,8 +26,10 @@ def populate_database():
     ]
 
     lesson_data = [
-        {'name': 'Yoga for Beginners', 'lesson_type': 'Yoga', 'description': 'A beginner-level yoga class for all ages.', 'capacity': 20},
-        {'name': 'Advanced Swimming', 'lesson_type': 'Swimming', 'description': 'An intensive swimming class for experienced swimmers.', 'capacity': 15},
+        
+        {'name': 'Yoga for Beginners', 'lesson_type': 'Yoga', 'description': 'A beginner-level yoga class for all ages.', 'capacity': 20, 'location_name': 'Downtown Studio', 'location_city': 'Montreal'},
+        {'name': 'Advanced Swimming', 'lesson_type': 'Swimming', 'description': 'An intensive swimming class for experienced swimmers.', 'capacity': 15, 'location_name': 'Uptown Pool', 'location_city': 'Montreal'},
+    
     ]
 
     # Updated time slot data with day_of_week and availability
@@ -33,10 +38,18 @@ def populate_database():
         {'lesson_name': 'Advanced Swimming', 'day_of_week': 'Monday', 'start_time': '2024-11-12 12:00:00', 'end_time': '2024-11-12 13:00:00', 'is_available': True},
     ]
 
+    
+
     location_data = [
         {'name': 'Downtown Studio', 'city': 'Montreal', 'address': '123 Main St'},
         {'name': 'Uptown Pool', 'city': 'Montreal', 'address': '456 Elm St'},
         {'name': 'Central Gym', 'city': 'Montreal', 'address': '789 Oak Ave'}
+    ]
+
+    schedule_data = [
+        {'lesson_id': 1, 'time_slot_id': 1},
+        {'lesson_id': 1, 'time_slot_id': 2},
+        {'lesson_id': 2, 'time_slot_id': 2}
     ]
 
     # Populating locations
@@ -66,6 +79,8 @@ def populate_database():
             username=data['username'],
             password_hash=generate_password_hash(data['password'])
         )
+        if 'guardian_id' in data:
+            client.add_guardian(data['guardian_id'])
         db.session.add(client)  # Add client to session
 
     # Populating admin
@@ -94,11 +109,17 @@ def populate_database():
             password_hash=generate_password_hash(data['password'])
         )
         db.session.add(instructor)  # Add instructor to session
-
+   
    #populate lessons
     for data in lesson_data:
         existing_lesson = Lesson.query.filter_by(name=data['name']).first()
         if existing_lesson:
+            continue
+
+        # Retrieve location by name
+        location = Location.query.filter_by(name=data['location_name']).first()
+        if not location:
+            print(f"Location {data['location_name']} not found.")
             continue
 
         # Create the lesson object
@@ -106,11 +127,11 @@ def populate_database():
             name=data['name'],
             lesson_type=data['lesson_type'],
             description=data['description'],
-            capacity=data['capacity']
+            capacity=data['capacity'],
+            location=location  # Assign the Location object directly
         )
-    
-        db.session.add(lesson)  # Add lesson to session
 
+        db.session.add(lesson)  # Add lesson to session
 
     db.session.commit()
 
@@ -135,25 +156,38 @@ def populate_database():
 
     db.session.commit()
 
+    
 
     
     admin = Admin.query.first()  # Assuming there's only one admin
     instructors = Instructor.query.all()  # Get all instructors
 
     for lesson in Lesson.query.all():
-        # Assign the first instructor to the first lesson for simplicity
+        # Assign the first instructor to the first lesson
         offering = Offering(
             lesson_id=lesson.lesson_id,
             instructor_id=instructors[0].instructor_id,
         )
         db.session.add(offering)
+    db.session.commit()
 
-    db.session.commit()  # Commit offerings to the session
+    for data in schedule_data:
+        print(data)
+        lesson = Lesson.query.filter_by(lesson_id=data['lesson_id']).first()
+        time_slot = TimeSlot.query.filter_by(id=data['time_slot_id']).first()
 
+        schedule = Schedule(
+            lesson=lesson,
+            time_slot = time_slot
+        )
+        db.session.add(schedule)
+    
+    db.session.commit()  
     print("Database populated with sample client, admin, instructor, lesson, time slot, location, and offering data.")
 
 if __name__ == '__main__':
     app = create_app()
     with app.app_context():
+        db.drop_all()
         db.create_all()  
         populate_database()
