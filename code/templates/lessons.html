@@ -7,29 +7,29 @@
             <th>ID</th>
             <th>Lesson</th>
             <th>Type</th>
+            <th>Location</th>
+            <th>Take lesson</th>
             
         </tr>
     </thead>
     <tbody>
         {% for lesson in lessons %}
         <tr>
-            <td>{{ lesson.lesson_id }}</td>
-            <td>{{ lesson.name }}</td>
-            <td>{{ lesson.lesson_type }}</td>
+            <td>{{ lesson.lesson.lesson_id }}</td>
+            <td>{{ lesson.lesson.name }}</td>
+            <td>{{ lesson.lesson.lesson_type }}</td>
+            <td>{{ lesson.lesson.location.name }}</td>
             
             <td>
                 <ul>
-               
-                        <li>
-                          
-                            <form action="{{ url_for('take_lesson') }}" method="post" style="display:inline;">
-                                <input type="hidden" name="lesson_id" value="{{ lesson.lesson_id }}">
-                                <button type="submit">Take Lesson</button>
-                            </form>
-                            
-                          
-                        </li>
-                  
+                    {% for time_slot in lesson.time_slots %}
+                    <li>
+                        {{ time_slot }}                         <form action="{{ url_for('take_lesson') }}" method="post" style="display:inline;">
+                        <input type="hidden" name="lesson_id" value="{{ lesson.lesson.lesson_id }}">
+                        <button type="submit">Take Lesson</button>
+                        </form>
+                    </li>
+                    {% endfor %}
                 </ul>
             </td>
         </tr>

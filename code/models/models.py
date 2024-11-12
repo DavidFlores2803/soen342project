@@ -262,8 +262,8 @@ class Schedule(db.Model):
     time_slot = db.relationship('TimeSlot', backref=db.backref('schedules', lazy=True))
 
 
-    def __repr__(self):
-        return f'{self.lesson.lesson_type} on {self.day_of_week.name} from {self.start_time} to {self.end_time} at {self.location.name}'
+    # def __repr__(self):
+    #     return f'{self.lesson.lesson_type} on {self.day_of_week.name} from {self.start_time} to {self.end_time} at {self.location.name}'
     
     def __init__(self, lesson, time_slot):
         self.lesson = lesson
@@ -274,8 +274,8 @@ class Schedule(db.Model):
         return Schedule.query.filter_by(lesson_id=lesson_id).all()
     
 
-    def __repr__(self):
-        return f'{self.lesson_type} on {self.day} from {self.start_time} to {self.end_time}'
+    # def __repr__(self):
+    #     return f'{self.lesson_type} on {self.day} from {self.start_time} to {self.end_time}'
 
 
 class Booking(db.Model):
@@ -335,7 +335,7 @@ class TimeSlot(db.Model):
         self.is_available = is_available
 
     def __repr__(self):
-        return f"TimeSlot({self.day_of_week.name}, {self.start_time}, {self.end_time}, {'available' if self.is_available else 'taken'})"
+        return f"TimeSlot({self.day_of_week}, {self.start_time}, {self.end_time}, {'available' if self.is_available else 'taken'})"
     
     def mark_as_taken(self):
         self.is_available = False

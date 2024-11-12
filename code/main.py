@@ -35,6 +35,13 @@ def client_registration():
 
         client = Client.query.filter_by(username=username).first()
 
+        # session["currentAccount"] = {
+        #     "username": client.username,
+        #     "client_id": client.client_id,
+        #     }
+        # session["accountType"] = CLIENT
+
+        #TODO redirect to client page
         if client:
             return redirect(url_for('client_registration'))
         
@@ -198,9 +205,27 @@ def take_lesson():
 def lessons():
     # Fetch all lessons from the database
     lessons = Lesson.query.all()
-    
+    lesson_and_time_slots = list()
+
+    for l in lessons:
+        scheds = Schedule.query.filter_by(lesson_id=l.lesson_id).all()
+        ts_list = list()
+        
+        for s in scheds:
+            time_slot = TimeSlot.query.filter_by(id=s.time_slot_id).first()
+            # print(f"adding ts for lesson #{l.lesson_id} = {time_slot}")
+            ts_list.append(time_slot)
+        
+        lts = {
+            'lesson' : l,
+            'time_slots': ts_list
+        }
+
+        # print(f"adding {lts} to list")
+        lesson_and_time_slots.append(lts)
+
     # Render the lessons.html template and pass the lessons data
-    return render_template('lessons.html', lessons=lessons)
+    return render_template('lessons.html', lessons=lesson_and_time_slots)
 
 # booking a class
 @app.route('/book_class', methods=['POST'])

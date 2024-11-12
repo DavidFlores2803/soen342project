@@ -135,7 +135,7 @@ def populate_database():
 
     db.session.commit()
 
-
+    # Populate schedules
     for slot_data in time_slot_data:
         lesson = Lesson.query.filter_by(name=slot_data['lesson_name']).first()
         if lesson:
