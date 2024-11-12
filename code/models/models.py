@@ -236,8 +236,15 @@ class Offering(db.Model):
         db.ForeignKey('instructors.instructor_id', name='fk_instructor_id'),
         nullable=False
     )
+    shedule_id = db.Column(
+        db.Integer,
+        db.ForeignKey('schedules.schedule_id', name='fk_schedule_id'),
+        nullable=True
+    )
     
     instructor = db.relationship('Instructor', backref=db.backref('offerings', lazy=True))
+    schedule = db.relationship('Schedule', backref=db.backref('offerings', lazy=True))
+   
    
      
 class Location(db.Model):
