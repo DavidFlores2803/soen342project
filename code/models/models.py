@@ -267,6 +267,7 @@ class Schedule(db.Model):
     
     time_slot_id = db.Column(db.Integer, db.ForeignKey('time_slots.id', name='fk_time_slot_id'), nullable=False)
     time_slot = db.relationship('TimeSlot', backref=db.backref('schedules', lazy=True))
+    is_available = db.Column(db.Boolean, default=True)
 
 
     # def __repr__(self):
