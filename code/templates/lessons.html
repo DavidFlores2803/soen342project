@@ -1,0 +1,40 @@
+{% include 'header.html' %}
+
+<h1>Lessons List</h1>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Lesson</th>
+            <th>Type</th>
+            
+        </tr>
+    </thead>
+    <tbody>
+        {% for lesson in lessons %}
+        <tr>
+            <td>{{ lesson.lesson_id }}</td>
+            <td>{{ lesson.name }}</td>
+            <td>{{ lesson.lesson_type }}</td>
+            
+            <td>
+                <ul>
+               
+                        <li>
+                          
+                            <form action="{{ url_for('take_lesson') }}" method="post" style="display:inline;">
+                                <input type="hidden" name="lesson_id" value="{{ lesson.lesson_id }}">
+                                <button type="submit">Take Lesson</button>
+                            </form>
+                            
+                          
+                        </li>
+                  
+                </ul>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</body>
+</html>

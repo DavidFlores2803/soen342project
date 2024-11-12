@@ -1,99 +1,142 @@
-from flask import Flask, redirect, url_for, request, render_template, session
+from werkzeug.security import check_password_hash
+from flask import Flask, flash, redirect, url_for, request, render_template, session
+from sqlalchemy.orm import joinedload 
 from enums.DayOfTheWeek import DayOfTheWeek
-from controllers import OfferingsController
-from models import *
-from models.administrator import Administrator
+
+from models.models import *
+
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+from app import create_app,db
 
-app = Flask(__name__)
-app.secret_key = "chiwiwi"
+app = create_app()
+#app = Flask(__name__)
+#app.secret_key = "chiwiwi"
+
 
 # account type name constants
 ADMIN = "admin"
 INSTRUCTOR = "instructor"
 CLIENT = "client"
 
-classID = 0
+with app.app_context():
+    offerings_list = db.session.query(Offering).options(joinedload(Offering.lesson)).all()
 
-offeringsController = OfferingsController()
-offerings_list = list()
-classes_offered_list = list()
-classes_taken_list = list()
+    lessons_list = db.session.query(Lesson).all()
+   
 
-@app.route("/")
-def home():
-    return render_template("index.html")
+@app.route('/client_registration', methods=["POST", "GET"])
+def client_registration():
+    if request.method == "POST":
+        name = request.form["name"]
+        age = request.form["age"]
+        username = request.form["username"]
+        password = request.form["password"]
+
+        client = Client.query.filter_by(username=username).first()
+
+        if client:
+            return redirect(url_for('client_registration'))
+        
+        new_client = Client(name=name, age=age, username=username)
+        new_client.set_password(password)
+
+        db.session.add(new_client)
+        db.session.commit()
+
+        return redirect(url_for('client_login'))
+    
+    return render_template('client_registration.html')
+
+
+@app.route('/instructor_registration', methods=["POST", "GET"])
+def instructor_registration():
+    if request.method == "POST":
+        name = request.form["name"]
+        age = request.form["age"]
+        username = request.form["username"]
+        password = request.form["password"]
+        phone = request.form["phone"]
+        specialization = request.form["specialization"]
+
+        instructor = Instructor.query.filter_by(username=username).first()
+
+        if instructor:
+            return redirect(url_for('instructor_registration'))
+
+        new_instructor = Instructor(name=name, age=age, username=username, phone=phone,specialization=specialization)
+        new_instructor.set_password(password)
+
+        db.session.add(new_instructor)
+        db.session.commit()
+
+        return redirect(url_for('instructor_login'))
+    
+    return render_template('instructor_registration.html')
+
 
 @app.route("/client_login", methods=["POST", "GET"])
 def client_login():
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
-        name = request.form["name"]
-        number = request.form["number"]
-        age = request.form["age"]
         
-        session["currentAccount"] = {
-            "username": username,
-            "password": password,
-            "name": name,
-            "number": number,
-            "age": age
-        }
+        client = Client.query.filter_by(username=username).first()
 
-        session["accountType"] = CLIENT
-
-        #TODO redirect to user page instead
-        return redirect(url_for("home"))
+        if client and check_password_hash(client.password_hash,password):
+            session["currentAccount"] = {
+                "username": client.username,
+                "client_id": client.client_id,
+                }
+            session["accountType"] = CLIENT
+        
+            return redirect(url_for("home"))
+        else:
+            return render_template("client_login.html")
     else:
         return render_template("client_login.html")
-
-@app.route("/instructor_login", methods=["POST", "GET"])
-def instructor_login():
-    if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
-        name = request.form["name"]
-        number = request.form["number"]
-        specialization = request.form["specialization"]
-        
-        session["currentAccount"] = {
-            "username": username,
-            "password": password,
-            "name": name,
-            "number": number,
-            "specialization": specialization
-        }
-
-        session["accountType"] = INSTRUCTOR
-
-        #TODO redirect to user page instead
-        return redirect(url_for("home"))
-    else:
-        return render_template("instructor_login.html")
-    
+ 
 @app.route("/admin_login", methods=["POST", "GET"])
 def admin_login():
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
         
-        
-        if username == "admin" and password == "password":  
+        admin = Admin.query.filter_by(username=username).first()
+        if admin and check_password_hash(admin.password_hash,password):
             session["currentAccount"] = {
-                "username": username,
-                "password": password,
-            }
+                "username": admin.username,
+                "client_id": admin.admin_id,
+                }
             session["accountType"] = ADMIN
 
-            # Redirect to admin account page
             return redirect(url_for("home"))
         else:
             error = "Invalid credentials. Please try again."
             return render_template("admin_login.html", error=error)
     else:
         return render_template("admin_login.html")
+
+@app.route("/instructor_login", methods=["POST", "GET"])
+def instructor_login():
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+        
+        instructor = Instructor.query.filter_by(username=username).first()
+        if instructor and check_password_hash(instructor.password_hash,password):
+            session["currentAccount"] = {
+                "username": instructor.username,
+                "instructor_id": instructor.instructor_id,
+                }
+            session["accountType"] = INSTRUCTOR
+
+            return redirect(url_for("home"))
+        else:
+            error = "Invalid credentials. Please try again."
+            return render_template("instructor_login.html", error=error)
+    else:
+        return render_template("instructor_login.html")
 
 @app.route("/logout")
 def logout():
@@ -103,139 +146,185 @@ def logout():
 @app.route("/offerings")
 def offerings():
     #TODO redirect to home if not logged in as instructor
-    if len(offerings_list) == 0:
-        generateOfferings()
-
+    
     return render_template("offerings.html", offerings=offerings_list)
 
-@app.route('/take_offering', methods=['POST'])
-def take_offering():
-    global classID
+#take lesson
+@app.route('/take_lesson', methods=['POST'])
+def take_lesson():
+    lesson_id = request.form.get('lesson_id')
+    instructor_id = session.get('currentAccount')['instructor_id']  
+  
+    
+    lesson = Lesson.query.get(lesson_id)
+    if not lesson:
+        print("Lesson not found.", "error")
+        return redirect(url_for('lessons'))
 
-    #TODO id is NOT EQUAL to arr index add a findOffering(id) method
-    offering_id = int(request.form.get('offering_id'))
-    time_slot = TimeSlot.stringToObj(request.form.get('time_slot'))
+    # # Find the specific time slot
+    # time_slot = lesson._find_time_slot(day, start_time, end_time)
+    # if not time_slot:
+    #     print("Time slot not found.", "error")
+    #     return redirect(url_for('lessons'))
+
+    # # Ensure the time slot is available
+    # if not time_slot.is_available:
+    #     print("Sorry, the selected time slot is no longer available.", "error")
+    #     return redirect(url_for('lessons'))
+   
+    # time_slot.markAsTaken()
+
+    # Create a new offering for this lesson with the current instructor
+    if not lesson.is_available:
+        print("The selected time slot is no longer available.", "error")
+        flash("Woops already take")
+        return redirect(url_for('lessons'))
     
-    offerings_list[offering_id].takeAvailability(time_slot)
-    
-    #TODO show available classes to clients and taken classes to instructors
-    offeredClass = OfferedClass(
-        id = classID, 
-        location=offerings_list[offering_id].location,
-        lesson=offerings_list[offering_id].lesson,
-        date=time_slot.day,
-        timeSlot=time_slot,
-        instructor=session['currentAccount']['name']
+    lesson.mark_as_taken()
+
+    new_offering = Offering(
+        lesson_id=lesson.lesson_id,
+        instructor_id=instructor_id
     )
-    classID += 1
-    classes_offered_list.append(offeredClass)
+    db.session.add(new_offering)
+    db.session.commit()
 
-    return redirect(url_for('instructor_account'))
+    flash("Lesson successfully taken!")
+    
+    return redirect(url_for('lessons'))
 
+
+@app.route('/lessons')
+def lessons():
+    # Fetch all lessons from the database
+    lessons = Lesson.query.all()
+    
+    # Render the lessons.html template and pass the lessons data
+    return render_template('lessons.html', lessons=lessons)
+
+# booking a class
 @app.route('/book_class', methods=['POST'])
 def book_class():
-    id = int(request.form.get('id'))
+    offering_id = request.form.get('offering_id')  
 
-    #TODO customer id should be id instead of name
-    classes_taken_list.append(
-        ClassTaken(
-            customer_id = session["currentAccount"]["name"],
-            class_id = id
-        ))
+    client_id = session.get("currentAccount")["name"]
 
-    return redirect(url_for("classes_offered"))
+    booked_class = Booking(client_id=client_id, offering_id=offering_id)
+  
+    db.session.add(booked_class)
+    db.session.commit()
 
-def get_by_id(list, id):
-    for item in list:
-        if item.id == id:
-            return item
-    return None
+    
+    return redirect(url_for('client_account'))
+
 
 @app.route('/delete_offering', methods=['POST'])
 def delete_offering():
     offering_id = int(request.form.get('offering_id'))
-
     
-    admin = Administrator("admin", "password")
+    admin_id = session.get('currentAccount', {}).get('admin_id')
+    if admin_id:
+        admin = Admin.query.filter_by(admin_id=admin_id).first()
+        if admin:
+            success = admin.deleteOffering(offering_id)
+            if success:
+                return redirect(url_for('admin_account'))
+            else:
+                return "Offering not found", 404
+    return "Unauthorized", 403  
 
-    # Call the delete method
-    success = admin.deleteOffering(offering_id)
 
-    if success:
-        return redirect(url_for('admin_account'))
-    else:
-        return "Offering not found", 404
-
-@app.route('/create_offering', methods=['GET', 'POST'])
-def create_offering():
-    if session.get("accountType") == ADMIN:
-        if request.method == 'POST':
-            lesson_name = request.form['lesson']
-            lesson_type = request.form['type']
-            duration = request.form['duration']
-            location_name = request.form['location_name']
-            location_city = request.form['location_city']
-            day = request.form['day'].upper()
-            start_time = int(request.form['start_time'])
-            end_time = int(request.form['end_time'])
-
-            lesson = Lesson(lesson_name, lesson_type, duration)
-            location = Location(location_name, location_city)
-            time_slot = TimeSlot(DayOfTheWeek[day], start_time, end_time)
-            now = datetime.now()
-            one_month_from_now = now + relativedelta(months=1)
-            availability = Availability(time_slot, now, one_month_from_now)
-
-            admin = Administrator("admin", "password")
-            admin.addOffering(lesson, location, [availability])
-
-            offerings_list.append(Offering(offeringsController.id, lesson, location, [availability]))
-            return redirect(url_for('admin_account'))
-        else:
-            return render_template('create_offering.html')  
-    else:
-        return redirect(url_for("home"))
-
-    
 @app.route('/classes_offered')
 def classes_offered():
-    return render_template('classes_offered.html', offered_classes=classes_offered_list)
+    
+    offered_classes = Offering.query.options(joinedload(Offering.instructor)).all()
+    if session.get('currentAccount') == "CLIENT":  # User is logged in
+        return render_template('classes_offered.html', offered_classes=offered_classes)
+    elif session.get('currentAccount') == "ADMIN":
+        return render_template('admin_account.html', offered_classes=offered_classes)
+    else:  # User is not logged in
+        return render_template('classes_view_only.html', offered_classes=offered_classes)
 
+
+# Show all booked classes for the client
 @app.route('/client_account')
 def client_account():
-    client_classes = list()
-    for aclass in classes_taken_list:
-        if aclass.customer_id == session["currentAccount"]["name"]:
-            class_taken = get_by_id(classes_offered_list, aclass.class_id)
-            if class_taken is not None:
-                client_classes.append(class_taken)
+    client_id = session.get("currentAccount")["name"]  
 
-    return render_template('client_account.html', classes_taken=client_classes)
+    
+    booked_classes = db.session.query(Booking).filter(Booking.client_id == client_id).all()
+
+   
+    return render_template('client_account.html', classes_taken=booked_classes)
+
 
 @app.route('/instructor_account')
 def instructor_account():
-    return render_template('instructor_account.html', my_classes=getClassesForInstructor(session['currentAccount']['name']))
 
-@app.route('/admin_account')
-def admin_account():
-    if not offeringsController.offerings:
-        generateOfferings() 
-        offeringsController.offerings = offerings_list
+    instructor_id = session.get('currentAccount')['instructor_id']
 
     
-    offers = offeringsController.getOfferings()
-    return render_template('admin_account.html', offered_classes=offers)
+    my_classes = db.session.query(Offering).filter(Offering.instructor_id == instructor_id).all()
 
-admin = Administrator("admin", "password")  # Initialize once
+    return render_template('instructor_account.html', my_classes=my_classes)
 
+#show list of offerings
+@app.route('/admin_account')
+
+def admin_account():
+    offered_classes = Offering.query.options(joinedload(Offering.instructor)).all()
+    return render_template('admin_account.html', offered_classes=offered_classes)
+
+@app.route('/create_lesson', methods=['GET', 'POST'])
+def create_lesson():
+    if request.method == 'POST':
+        # Get form data
+        lesson_name = request.form['lesson']
+        lesson_type = request.form['type']
+        description = request.form['description']
+        capacity = request.form['capacity']
+        location_name = request.form['location_name']
+        location_city = request.form['location_city']
+        day_of_week = request.form['day']
+        start_time = request.form['start_time']
+        end_time = request.form['end_time']
+        
+        
+        # Create a lesson
+        admin = Admin.query.first()  
+        result = admin.createLesson(
+            name=lesson_name,
+            lesson_type=lesson_type,
+            description=description,  
+            capacity=capacity
+        )
+
+        return redirect(url_for('admin_lessons'))
+
+    return render_template('create_lesson.html')
+
+@app.route('/admin_lessons')
+def admin_lessons():
+    lessons = Lesson.query.all()  
+    return render_template('admin_lessons.html', lessons=lessons)
+
+
+
+#delete instructor
 @app.route('/manage_instructors', methods=['GET', 'POST'])
 def manage_instructors():
     if session.get("accountType") == ADMIN:
-        instructors = admin.instructors 
+        
+        instructors = Instructor.query.all()
+        admin_id = session.get('currentAccount', {}).get('admin_id')
 
         if request.method == 'POST':
             account_username = request.form.get('username')
-            admin.deleteAccount("instructor", account_username)
+            if admin_id:
+                admin = Admin.query.filter_by(admin_id=admin_id).first()
+                admin.deleteAccount("instructor", account_username)
+                db.session.commit()
+
             return redirect(url_for('manage_instructors'))
 
         return render_template('manage_instructors.html', instructors=instructors)
@@ -245,79 +334,56 @@ def manage_instructors():
 @app.route('/manage_clients', methods=['GET', 'POST'])
 def manage_clients():
     if session.get("accountType") == ADMIN:
-        clients = admin.clients 
+        clients = Client.query.all()
+        admin_id = session.get('currentAccount', {}).get('admin_id')
 
         if request.method == 'POST':
             account_username = request.form.get('username')
-            admin.deleteAccount("client", account_username)
+            if admin_id:
+                admin = Admin.query.filter_by(admin_id=admin_id).first()
+                admin.deleteAccount("client", account_username)
+                db.session.commit()
             return redirect(url_for('manage_clients'))
 
         return render_template('manage_clients.html', clients=clients)
     else:
         return redirect(url_for("home"))
-
-def generateOfferings():
-    global offerings_list
-
     
-    if offerings_list:
-        return
+# @app.route('/pick_lesson/<lesson_id>', methods=['POST'])
+# def pick_lesson(lesson_id):
+#     if session.get("accountType") == "INSTRUCTOR":
+#         instructor_id = session.get('currentAccount', {}).get('instructor_id')
+        
+#         if not instructor_id:
+#             return redirect(url_for("home"))
+        
+       
+#         lesson = Lesson.query.filter_by(id=lesson_id).first()
+#         if not lesson:
+#             return redirect(url_for("home"))
+        
+       
+#         instructor = Instructor.query.filter_by(id=instructor_id).first()
+#         if instructor:
+#             offering = Offering(lesson=lesson, instructor=instructor)
+#             db.session.add(offering)
+#             db.session.commit()
 
-    # Create sample locations
-    location1 = Location("EV Building", "Montreal")
-    location2 = Location("Engineering Building", "Los Angeles")
-    location3 = Location("History Hall", "Chicago")
-    location4 = Location("Art Center", "San Francisco")
-    location5 = Location("Music Hall", "Seattle")
+#             return redirect(url_for('instructor_account', message="You have successfully picked the lesson as your offering."))
 
-    
-    math_lesson = Lesson("Mathematics", "Online", "1 hour")
-    science_lesson = Lesson("Science", "In-Person", "1.5 hours")
-    history_lesson = Lesson("History", "Online", "2 hours")
-    art_lesson = Lesson("Art", "In-Person", "2 hours")
-    music_lesson = Lesson("Music", "Online", "30 minutes")
-
-    
-    now = datetime.now()
-    one_month_from_now = now + relativedelta(months=1)
-
-    
-    math_time_slots = [TimeSlot(DayOfTheWeek.MONDAY, 10, 15), TimeSlot(DayOfTheWeek.WEDNESDAY, 14, 18)]
-    science_time_slots = [TimeSlot(DayOfTheWeek.TUESDAY, 13, 19), TimeSlot(DayOfTheWeek.THURSDAY, 15, 21)]
-    history_time_slots = [TimeSlot(DayOfTheWeek.FRIDAY, 9, 15), TimeSlot(DayOfTheWeek.SATURDAY, 12, 18)]
-    art_time_slots = [TimeSlot(DayOfTheWeek.MONDAY, 11, 17), TimeSlot(DayOfTheWeek.THURSDAY, 13, 17)]
-    music_time_slots = [TimeSlot(DayOfTheWeek.WEDNESDAY, 10, 12.5), TimeSlot(DayOfTheWeek.FRIDAY, 17, 22)]
+#         return redirect(url_for("home"))
 
    
-    math_availabilities = [Availability(slot, now, one_month_from_now) for slot in math_time_slots]
-    science_availabilities = [Availability(slot, now, one_month_from_now) for slot in science_time_slots]
-    history_availabilities = [Availability(slot, now, one_month_from_now) for slot in history_time_slots]
-    art_availabilities = [Availability(slot, now, one_month_from_now) for slot in art_time_slots]
-    music_availabilities = [Availability(slot, now, one_month_from_now) for slot in music_time_slots]
+#     return redirect(url_for("home"))
 
-   
-    sample_offerings = [
-        Offering(0, math_lesson, location1, math_availabilities),
-        Offering(1, science_lesson, location2, science_availabilities),
-        Offering(2, history_lesson, location3, history_availabilities),
-        Offering(3, art_lesson, location4, art_availabilities),
-        Offering(4, music_lesson, location5, music_availabilities),
-    ]
+# def getClassesForInstructor(name):
+#     #TODO should match on id not on name
+#     list_of_classes = []
+#     for class_offered in classes_offered_list:
+#         if class_offered.instructor == name:
+#             list_of_classes.append(class_offered)
 
-    
-    offerings_list.extend(sample_offerings)
-    for offering in sample_offerings:
-        offeringsController.addOffering(offering.lesson, offering.location, offering.availabilities)
-
-
-def getClassesForInstructor(name):
-    #TODO should match on id not on name
-    list_of_classes = []
-    for class_offered in classes_offered_list:
-        if class_offered.instructor == name:
-            list_of_classes.append(class_offered)
-
-    return list_of_classes
+#     return list_of_classes
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host='0.0.0.0', port=5001, debug=True)

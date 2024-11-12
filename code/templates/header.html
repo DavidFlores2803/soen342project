@@ -15,14 +15,17 @@
                     <h2><a href="/">Home</a></h2>
                     <ul>
                         {% if session.get('accountType') == 'instructor' %}
-                            <li><a href="/offerings">Offerings</a></li>
+                            <li><a href="{{ url_for('lessons') }}">Take Lesson</a></li>
+                            <li><a href="/instructor_account">My Offerings</a></li>
                             {% endif %}
                             {% if session.get('accountType') == 'admin' %}
                             <li><a href="/admin_account">Offerings</a></li>
                             <li><a href="/manage_clients">Manage Clients</a></li>
                             <li><a href="/manage_instructors">Manage Instructors</a></li>
+                            <li><a href="/create_lesson">Add Lesson</a></li>
+                            <li><a href="/admin_lessons">View Lessons</a></li>
                             {% endif %}
-                            <li><a href="/classes_offered">Classes</a></li>
+                            
                     </ul>
                 </div>
                 <div class="right-section">
@@ -40,6 +43,8 @@
                     <a href="/client_login"><button>Client log in</button></a>
                     <a href="/instructor_login"><button>Instructor log in</button></a>
                     <a href="/admin_login"><button>Admin log in</button></a>
+                    <a href="/client_registration"><button>Client Registration</button></a>
+                    <a href="/instructor_registration"><button>Instructor Registration</button></a>
                     {% endif %}
                 </div>
             </nav>

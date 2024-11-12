@@ -1,0 +1,30 @@
+{% include 'header.html' %}
+
+<h1>Lessons List</h1>
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Lesson</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Location</th>
+            <th>City</th>
+            <th>Time Slots</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for lesson in lessons %}
+        <tr>
+            <td>{{ lesson.lesson_id }}</td>
+            <td>{{ lesson.name }}</td>
+            <td>{{ lesson.lesson_type }}</td>
+            <td>{{ lesson.description }}</td>
+            
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</body>
+</html>

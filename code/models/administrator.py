@@ -10,37 +10,8 @@ class Administrator:
         self.clients = []
         self.instructors = []
     
-    """
-    What can the admin do?
-
-    1. Add an offering
-
-    //should be able to create a new Offering with these attributes
-    //once added it is added to the DB
-     self.location = location
-        self.lesson = lesson
-        self.date = date
-        self.timeSlot = timeSlot
-        self.instructor = instructor
-
-    2. Delete an offering
-
-      self.id = id
-        self.lesson = lesson
-        self.location = location
-        self.availabilities = availabilities
-
-    delete the offering with the respective id
-
-    3. Can delete/add a client account
-
-    4. can delete/add an instructor account
-
-
-    Temporary -> delete from list
-    Future -> delete from DB
+   
     
-    """
     def addClient(self, client):
         self.clients.append(client)
 

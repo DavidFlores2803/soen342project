@@ -1,6 +1,5 @@
 {% include 'header.html' %}
 
-
 <h1>Classes Offered</h1>
 <table>
     <thead>
@@ -10,23 +9,16 @@
             <th>Date</th>
             <th>Time Slot</th>
             <th>Instructor</th>
-            <th>Book Class</th>
         </tr>
     </thead>
     <tbody>
         {% for offering in offered_classes %}
         <tr>
+          
             <td>{{ offering.lesson.name }}</td>
             <td>{{ offering.instructor.name }}</td>
-            <td>
-                <form action="{{ url_for('book_class') }}" method="post" style="display:inline;">
-                    <input type="hidden" name="offering_id" value="{{ offering.id }}">
-                    <button type="submit">Book Class</button>
-                </form>
-            </td>
         </tr>
-    {% endfor %}
-    
+        {% endfor %}
     </tbody>
 </table>
 </body>

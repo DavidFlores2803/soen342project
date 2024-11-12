@@ -1,7 +1,7 @@
 {% include 'header.html' %}
 
     <h1>All Offerings
-        <a href="{{ url_for('create_offering') }}"><button>Create New Offering </button></a>
+        
     </h1>
     <table>
         <thead>
@@ -9,22 +9,20 @@
                 <th>ID</th>
                 <th>Lesson</th>
                 <th>Type</th>
-                <th>Duration</th>
-                <th>Location</th>
-                <th>City</th>
-                <th>Time Slots</th>
+                <th>Description</th>
+                <th>Instructor</th>
                 <th>Delete Offering</th>
             </tr>
         </thead>
         <tbody>
             {% for offering in offered_classes %}
             <tr>
-                <td>{{ offering.id }}</td>
+                <td>{{ offering.offering_id }}</td>
                 <td>{{ offering.lesson.name }}</td>
-                <td>{{ offering.lesson.type }}</td>
-                <td>{{ offering.lesson.duration }}</td>
-                <td>{{ offering.location.name }}</td>
-                <td>{{ offering.location.city }}</td>
+                <td>{{ offering.lesson.lesson_type }}</td>
+                <td>{{ offering.lesson.description }}</td>
+                <td>{{ offering.instructor.name }}</td>
+              
                 <td>
                     <ul>
                         <!-- Loop through the availabilities and display each time slot -->
@@ -33,8 +31,6 @@
                         {% endfor %}
                     </ul>
                     
-                </td>
-                <td>
                     <ul>
                             <li>
                                 <form action="{{ url_for('delete_offering') }}" method="post" style="display:inline;">

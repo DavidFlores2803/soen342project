@@ -1,0 +1,159 @@
+from app import db, create_app
+from models.models import Admin, Client, Instructor, Lesson, TimeSlot, Offering, Location
+from werkzeug.security import generate_password_hash
+from datetime import datetime
+
+def populate_database():
+    clients_data = [
+        {'name': 'Sydney Campbell', 'age': 21, 'username': 'syd', 'password': 'password100'},
+        {'name': 'David Flores', 'age': 22, 'username': 'david', 'password': 'password101'},
+    ]
+
+    admin_data = [
+        {'username': 'admin', 'password': 'password'}
+    ]
+
+    instructors_data = [
+        {'name': 'Aurora Blackwood', 'age': 30, 'username': 'aurora_blackwood', 'phone': '123-456-7890', 'password': 'instructor123'},
+        {'name': 'Jasper Vance', 'age': 28, 'username': 'jasper_vance', 'phone': '987-654-3210', 'password': 'instructor456'},
+        {'name': 'Indigo Wilder', 'age': 33, 'username': 'indigo_wilder', 'phone': '555-666-7777', 'password': 'instructor789'},
+        {'name': 'Felix Storm', 'age': 27, 'username': 'felix_storm', 'phone': '333-444-5555', 'password': 'instructor101'},
+        {'name': 'Nova Rain', 'age': 35, 'username': 'nova_rain', 'phone': '444-555-6666', 'password': 'instructor202'},
+        {'name': 'Dante Hawke', 'age': 32, 'username': 'dante_hawke', 'phone': '777-888-9999', 'password': 'instructor303'},
+    ]
+
+    lesson_data = [
+        {'name': 'Yoga for Beginners', 'lesson_type': 'Yoga', 'description': 'A beginner-level yoga class for all ages.', 'capacity': 20},
+        {'name': 'Advanced Swimming', 'lesson_type': 'Swimming', 'description': 'An intensive swimming class for experienced swimmers.', 'capacity': 15},
+    ]
+
+    # Updated time slot data with day_of_week and availability
+    time_slot_data = [
+        {'lesson_name': 'Yoga for Beginners', 'day_of_week': 'Monday', 'start_time': '2024-11-12 10:00:00', 'end_time': '2024-11-12 11:00:00', 'is_available': True},
+        {'lesson_name': 'Advanced Swimming', 'day_of_week': 'Monday', 'start_time': '2024-11-12 12:00:00', 'end_time': '2024-11-12 13:00:00', 'is_available': True},
+    ]
+
+    location_data = [
+        {'name': 'Downtown Studio', 'city': 'Montreal', 'address': '123 Main St'},
+        {'name': 'Uptown Pool', 'city': 'Montreal', 'address': '456 Elm St'},
+        {'name': 'Central Gym', 'city': 'Montreal', 'address': '789 Oak Ave'}
+    ]
+
+    # Populating locations
+    for data in location_data:
+        existing_location = Location.query.filter_by(name=data['name'], city=data['city']).first()
+        if existing_location:
+            continue
+
+        location = Location(
+            name=data['name'],
+            city=data['city'],
+            address=data['address']
+        )
+        db.session.add(location)  # Add location to session
+
+    db.session.commit()  # Commit to create locations in the database
+
+    # Populating clients
+    for data in clients_data:
+        existing_client = Client.query.filter_by(username=data['username']).first()
+        if existing_client:
+            continue
+        
+        client = Client(
+            name=data['name'],
+            age=data['age'],
+            username=data['username'],
+            password_hash=generate_password_hash(data['password'])
+        )
+        db.session.add(client)  # Add client to session
+
+    # Populating admin
+    for data in admin_data:
+        existing_admin = Admin.query.filter_by(username=data['username']).first()
+        if existing_admin:
+            continue
+        
+        admin = Admin(
+            username=data['username'],
+            password_hash=generate_password_hash(data['password'])
+        )
+        db.session.add(admin)  # Add admin to session
+
+    # Populating instructors
+    for data in instructors_data:
+        existing_instructor = Instructor.query.filter_by(username=data['username']).first()
+        if existing_instructor:
+            continue
+
+        instructor = Instructor(
+            name=data['name'],
+            age=data['age'],
+            username=data['username'],
+            phone=data['phone'],
+            password_hash=generate_password_hash(data['password'])
+        )
+        db.session.add(instructor)  # Add instructor to session
+
+   #populate lessons
+    for data in lesson_data:
+        existing_lesson = Lesson.query.filter_by(name=data['name']).first()
+        if existing_lesson:
+            continue
+
+        # Create the lesson object
+        lesson = Lesson(
+            name=data['name'],
+            lesson_type=data['lesson_type'],
+            description=data['description'],
+            capacity=data['capacity']
+        )
+    
+        db.session.add(lesson)  # Add lesson to session
+
+
+    db.session.commit()
+
+
+    for slot_data in time_slot_data:
+        lesson = Lesson.query.filter_by(name=slot_data['lesson_name']).first()
+        if lesson:
+            start_time = datetime.strptime(slot_data['start_time'], '%Y-%m-%d %H:%M:%S')
+            end_time = datetime.strptime(slot_data['end_time'], '%Y-%m-%d %H:%M:%S')
+        
+        # Create time slot and associate it with the lesson
+            time_slot = TimeSlot(
+                day_of_week=slot_data['day_of_week'],
+                start_time=start_time,
+                end_time=end_time,
+                lesson_id=lesson.lesson_id,
+                is_available=slot_data['is_available']
+            )
+            time_slot.lesson = lesson
+            db.session.add(time_slot) 
+
+
+    db.session.commit()
+
+
+    
+    admin = Admin.query.first()  # Assuming there's only one admin
+    instructors = Instructor.query.all()  # Get all instructors
+
+    for lesson in Lesson.query.all():
+        # Assign the first instructor to the first lesson for simplicity
+        offering = Offering(
+            lesson_id=lesson.lesson_id,
+            instructor_id=instructors[0].instructor_id,
+        )
+        db.session.add(offering)
+
+    db.session.commit()  # Commit offerings to the session
+
+    print("Database populated with sample client, admin, instructor, lesson, time slot, location, and offering data.")
+
+if __name__ == '__main__':
+    app = create_app()
+    with app.app_context():
+        db.create_all()  
+        populate_database()
