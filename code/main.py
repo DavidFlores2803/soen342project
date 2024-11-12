@@ -161,25 +161,25 @@ def offerings():
 def take_lesson():
     lesson_id = request.form.get('lesson_id')
     instructor_id = session.get('currentAccount')['instructor_id']  
+    sched_id = request.form.get('schedule_id')
   
     
     lesson = Lesson.query.get(lesson_id)
     if not lesson:
         print("Lesson not found.", "error")
         return redirect(url_for('lessons'))
+    
+    schedule = Schedule.query.get(sched_id)
+    if not schedule:
+        print("Schedule not found.", "error")
+        return redirect(url_for('lessons'))
 
-    # # Find the specific time slot
-    # time_slot = lesson._find_time_slot(day, start_time, end_time)
-    # if not time_slot:
-    #     print("Time slot not found.", "error")
-    #     return redirect(url_for('lessons'))
-
-    # # Ensure the time slot is available
-    # if not time_slot.is_available:
-    #     print("Sorry, the selected time slot is no longer available.", "error")
-    #     return redirect(url_for('lessons'))
+    # Ensure the time slot is available
+    if not schedule.time_slot.is_available:
+        print("Sorry, the selected time slot is no longer available.", "error")
+        return redirect(url_for('lessons'))
    
-    # time_slot.markAsTaken()
+    schedule.time_slot.markAsTaken()
 
     # Create a new offering for this lesson with the current instructor
     if not lesson.is_available:
@@ -211,14 +211,16 @@ def lessons():
         scheds = Schedule.query.filter_by(lesson_id=l.lesson_id).all()
         ts_list = list()
         
-        for s in scheds:
-            time_slot = TimeSlot.query.filter_by(id=s.time_slot_id).first()
-            # print(f"adding ts for lesson #{l.lesson_id} = {time_slot}")
-            ts_list.append(time_slot)
+        # for s in scheds:
+        #     time_slot = TimeSlot.query.filter_by(id=s.time_slot_id).first()
+        #     # print(f"adding ts for lesson #{l.lesson_id} = {time_slot}")
+        #     print(f"a {s.time_slot}")
+        #     ts_list.append(time_slot)
         
         lts = {
             'lesson' : l,
-            'time_slots': ts_list
+            # 'time_slots': ts_list,
+            'schedules' : scheds
         }
 
         # print(f"adding {lts} to list")
