@@ -162,37 +162,21 @@ def take_lesson():
     lesson_id = request.form.get('lesson_id')
     instructor_id = session.get('currentAccount')['instructor_id']  
     sched_id = request.form.get('schedule_id')
-  
     
-    lesson = Lesson.query.get(lesson_id)
-    if not lesson:
-        print("Lesson not found.", "error")
-        return redirect(url_for('lessons'))
-    
-    schedule = Schedule.query.get(sched_id)
+    schedule = Schedule.query.filter_by(schedule_id=sched_id).first()
     if not schedule:
         print("Schedule not found.", "error")
         return redirect(url_for('lessons'))
 
-    # Ensure the time slot is available
-    if not schedule.time_slot.is_available:
-        print("Sorry, the selected time slot is no longer available.", "error")
-        return redirect(url_for('lessons'))
-   
-    schedule.time_slot.markAsTaken()
+    schedule.is_available = False
 
-    # Create a new offering for this lesson with the current instructor
-    if not lesson.is_available:
-        print("The selected time slot is no longer available.", "error")
-        flash("Woops already take")
-        return redirect(url_for('lessons'))
-    
-    lesson.mark_as_taken()
-
+    # # Create a new offering for this lesson with the current instructor
     new_offering = Offering(
-        lesson_id=lesson.lesson_id,
-        instructor_id=instructor_id
+        lesson_id=lesson_id,
+        instructor_id=instructor_id,
+        shedule_id = sched_id
     )
+    
     db.session.add(new_offering)
     db.session.commit()
 
@@ -208,22 +192,12 @@ def lessons():
     lesson_and_time_slots = list()
 
     for l in lessons:
-        scheds = Schedule.query.filter_by(lesson_id=l.lesson_id).all()
-        ts_list = list()
-        
-        # for s in scheds:
-        #     time_slot = TimeSlot.query.filter_by(id=s.time_slot_id).first()
-        #     # print(f"adding ts for lesson #{l.lesson_id} = {time_slot}")
-        #     print(f"a {s.time_slot}")
-        #     ts_list.append(time_slot)
-        
+        scheds = Schedule.query.filter_by(lesson_id=l.lesson_id).all() 
         lts = {
             'lesson' : l,
-            # 'time_slots': ts_list,
             'schedules' : scheds
         }
 
-        # print(f"adding {lts} to list")
         lesson_and_time_slots.append(lts)
 
     # Render the lessons.html template and pass the lessons data

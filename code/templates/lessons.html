@@ -25,7 +25,7 @@
                     {% for schedule in lesson.schedules %}
                     <li>
                         {{ schedule.time_slot }}
-                        {% if schedule.time_slot.isAvailable %}                     
+                        {% if schedule.is_available %}                     
                         <form action="{{ url_for('take_lesson') }}" method="post" style="display:inline;">
                             <input type="hidden" name="lesson_id" value="{{ lesson.lesson.lesson_id }}">
                             <input type="hidden" name="schedule_id" value="{{ schedule.schedule_id }}">

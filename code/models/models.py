@@ -276,6 +276,7 @@ class Schedule(db.Model):
     def __init__(self, lesson, time_slot):
         self.lesson = lesson
         self.time_slot = time_slot
+        self.is_available = True
 
     @staticmethod
     def get_schedule_by_lesson(lesson_id):
