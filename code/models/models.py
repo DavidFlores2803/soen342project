@@ -244,8 +244,16 @@ class Offering(db.Model):
     
     instructor = db.relationship('Instructor', backref=db.backref('offerings', lazy=True))
     schedule = db.relationship('Schedule', backref=db.backref('offerings', lazy=True))
-   
-   
+
+    def is_full(self):
+        count = len(Booking.query.filter_by(offering_id=self.offering_id).all())
+        lesson = Lesson.query.filter_by(lesson_id=self.lesson_id).first()
+        return count >= lesson.capacity
+
+    def display_capacity(self):
+        count = len(Booking.query.filter_by(offering_id=self.offering_id).all())
+        lesson = Lesson.query.filter_by(lesson_id=self.lesson_id).first()
+        return f"{count}/{lesson.capacity}"
      
 class Location(db.Model):
     __tablename__ = 'locations'
@@ -300,7 +308,7 @@ class Booking(db.Model):
     offering = db.relationship('Offering', backref=db.backref('bookings', lazy=True))
 
     def __repr__(self):
-     return f'Booking of {self.client.name} for {self.offering.lesson.lesson_type} on {self.offering.lesson.day}'
+        return f'Booking of {self.client.name} for {self.offering.lesson.lesson_type}'
     
     @classmethod
     def create_booking(cls, client, offering):
@@ -351,6 +359,17 @@ class TimeSlot(db.Model):
 
     def mark_as_available(self):
         self.is_available = True
+
+    def display_date(self):
+        # expected format : "2024-11-12 10:00:00"
+        start_date = self.start_time.split(" ")[0]
+        end_date = self.end_time.split(" ")[0]
+        return f"{self.day_of_week}s from {start_date} to {end_date}"
+
+    def display_time(self):
+        start_hour = self.start_time.split(" ")[1]
+        end_hour = self.end_time.split(" ")[1]
+        return f"From {start_hour} to {end_hour}"
 
     @staticmethod
     def string_to_obj(time_slot_string):

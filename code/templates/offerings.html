@@ -1,0 +1,55 @@
+{% include 'header.html' %}
+
+    <h1>Offerings</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Location</th>
+                <th>Lesson</th>
+                <th>Instructor</th>
+                <th>Date</th>
+                <th>Time Slot</th>
+                <th>Capacity</th>
+                {% if session.get('currentAccount') and not session['currentAccount'].get('is_kid_account') %}
+                <th>Take offering</th>
+                {% endif %}
+                {% if session.get('currentAccount') and session['currentAccount'].get('kid_id') %}
+                <th>Book for child</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for offering in offerings %}
+            <tr>
+                <td>{{ offering.lesson.location.name }}</td>
+                <td>{{ offering.lesson.name }}</td>
+                <td>{{ offering.instructor.username}}</td>
+                <td>{{ offering.schedule.time_slot.display_date() }}</td>
+                <td>{{ offering.schedule.time_slot.display_time() }}</td>
+                <td>{{ offering.display_capacity() }}</td>
+                {% if offering.is_full() %}
+                <td>Class is full</td>
+                {% elif session.get('currentAccount') and not session['currentAccount'].get('is_kid_account') %}
+                <td>
+                    <form action="{{ url_for('book_class') }}" method="post" style="display:inline;">
+                    <input type="hidden" name="offering_id" value="{{ offering.offering_id }}">
+                    <input type="hidden" name="for_child" value="False">
+                    <button type="submit">Sign up</button>
+                    </form>
+                </td>
+                {% if session.get('currentAccount') and session['currentAccount'].get('kid_id') %}
+                <td>
+                    <form action="{{ url_for('book_class') }}" method="post" style="display:inline;">
+                    <input type="hidden" name="offering_id" value="{{ offering.offering_id }}">
+                    <input type="hidden" name="for_child" value="True">
+                    <button type="submit">Book for child</button>
+                    </form>
+                </td>
+                {% endif %}
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

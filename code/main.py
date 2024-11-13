@@ -35,11 +35,11 @@ def client_registration():
 
         client = Client.query.filter_by(username=username).first()
 
-        # session["currentAccount"] = {
-        #     "username": client.username,
-        #     "client_id": client.client_id,
-        #     }
-        # session["accountType"] = CLIENT
+        session["currentAccount"] = {
+            "username": client.username,
+            "client_id": client.client_id,
+            }
+        session["accountType"] = CLIENT
 
         #TODO redirect to client page
         if client:
@@ -91,10 +91,24 @@ def client_login():
         client = Client.query.filter_by(username=username).first()
 
         if client and check_password_hash(client.password_hash,password):
+
+            kid = Client.query.filter_by(guardian_id=client.client_id).first()
+            if kid == None:
+                print("has no kid")
+            else:
+                print(f"has kid {kid.client_id}")
+
+            is_kid_account = client.age < 18
+            
             session["currentAccount"] = {
                 "username": client.username,
                 "client_id": client.client_id,
+                "is_kid_account": is_kid_account
                 }
+            
+            if kid is not None:
+                session["currentAccount"]["kid_id"] = kid.client_id
+
             session["accountType"] = CLIENT
         
             return redirect(url_for("home"))
@@ -152,9 +166,8 @@ def logout():
     
 @app.route("/offerings")
 def offerings():
-    #TODO redirect to home if not logged in as instructor
-    
-    return render_template("offerings.html", offerings=offerings_list)
+    offerings = Offering.query.all()
+    return render_template("offerings.html", offerings=offerings)
 
 #take lesson
 @app.route('/take_lesson', methods=['POST'])
@@ -207,14 +220,36 @@ def lessons():
 @app.route('/book_class', methods=['POST'])
 def book_class():
     offering_id = request.form.get('offering_id')  
+    is_for_child = request.form.get("for_child") == "True"
 
-    client_id = session.get("currentAccount")["name"]
+    if is_for_child:
+        client_id = session.get("currentAccount")["kid_id"]
+    else:
+        client_id = session.get("currentAccount")["client_id"]
 
     booked_class = Booking(client_id=client_id, offering_id=offering_id)
-  
-    db.session.add(booked_class)
-    db.session.commit()
 
+    # Check if client and offering exist
+    client_exists = Client.query.get(booked_class.client_id)
+    offering_exists = Offering.query.get(booked_class.offering_id)
+
+    if not client_exists:
+        print(f"Client with ID {booked_class.client_id} does not exist.")
+    elif not offering_exists:
+        print(f"Offering with ID {booked_class.offering_id} does not exist.")
+    else:
+        # Only add booking if it doesn’t already exist
+        existing_booking = Booking.query.filter_by(
+            client_id=booked_class.client_id,
+            offering_id=booked_class.offering_id
+        ).first()
+
+        if not existing_booking:
+            print(f"Adding booking {booked_class.client_id}, {booked_class.offering_id} to the db")
+            db.session.add(booked_class)
+            db.session.commit()
+        else:
+            print("Booking already exists in the database.")
     
     return redirect(url_for('client_account'))
 
@@ -250,23 +285,15 @@ def classes_offered():
 # Show all booked classes for the client
 @app.route('/client_account')
 def client_account():
-    client_id = session.get("currentAccount")["name"]  
-
-    
+    client_id = session.get("currentAccount")["client_id"]  
     booked_classes = db.session.query(Booking).filter(Booking.client_id == client_id).all()
-
-   
     return render_template('client_account.html', classes_taken=booked_classes)
 
 
 @app.route('/instructor_account')
 def instructor_account():
-
     instructor_id = session.get('currentAccount')['instructor_id']
-
-    
     my_classes = db.session.query(Offering).filter(Offering.instructor_id == instructor_id).all()
-
     return render_template('instructor_account.html', my_classes=my_classes)
 
 #show list of offerings
