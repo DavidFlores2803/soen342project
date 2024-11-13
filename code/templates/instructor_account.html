@@ -8,14 +8,17 @@
                 <th>Lesson</th>
                 <th>Date</th>
                 <th>Time Slot</th>
+                <th>Capacity</th>
             </tr>
         </thead>
         <tbody>
             {% for offered_class in my_classes %}
             <tr>
-                <td></td>
+                <td>{{ offered_class.lesson.location.name }}</td>
                 <td>{{ offered_class.lesson.name }}</td>
-              
+                <td>{{ offered_class.schedule.time_slot.display_date() }}</td>
+                <td>{{ offered_class.schedule.time_slot.display_time() }}</td>
+                <td>{{ offered_class.lesson.capacity }}</td>
             </tr>
             {% endfor %}
         </tbody>

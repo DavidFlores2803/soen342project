@@ -352,6 +352,17 @@ class TimeSlot(db.Model):
     def mark_as_available(self):
         self.is_available = True
 
+    def display_date(self):
+        # expected format : "2024-11-12 10:00:00"
+        start_date = self.start_time.split(" ")[0]
+        end_date = self.end_time.split(" ")[0]
+        return f"{self.day_of_week}s from {start_date} to {end_date}"
+
+    def display_time(self):
+        start_hour = self.start_time.split(" ")[1]
+        end_hour = self.end_time.split(" ")[1]
+        return f"From {start_hour} to {end_hour}"
+
     @staticmethod
     def string_to_obj(time_slot_string):
         
