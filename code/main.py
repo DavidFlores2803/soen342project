@@ -274,12 +274,8 @@ def client_account():
 
 @app.route('/instructor_account')
 def instructor_account():
-
     instructor_id = session.get('currentAccount')['instructor_id']
-
-    
     my_classes = db.session.query(Offering).filter(Offering.instructor_id == instructor_id).all()
-
     return render_template('instructor_account.html', my_classes=my_classes)
 
 #show list of offerings

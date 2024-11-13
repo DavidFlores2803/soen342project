@@ -18,7 +18,7 @@
                 <td>{{ offered_class.lesson.name }}</td>
                 <td>{{ offered_class.schedule.time_slot.display_date() }}</td>
                 <td>{{ offered_class.schedule.time_slot.display_time() }}</td>
-                <td>{{ offered_class.lesson.capacity }}</td>
+                <td>{{ offered_class.display_capacity() }}</td>
             </tr>
             {% endfor %}
         </tbody>

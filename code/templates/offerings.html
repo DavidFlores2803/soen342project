@@ -21,13 +21,17 @@
                 <td>{{ offering.instructor.username}}</td>
                 <td>{{ offering.schedule.time_slot.display_date() }}</td>
                 <td>{{ offering.schedule.time_slot.display_time() }}</td>
-                <td>{{ offering.lesson.capacity }}</td>
+                <td>{{ offering.display_capacity() }}</td>
+                {% if offering.is_full() %}
+                <td>Class is full</td>
+                {% else %}
                 <td>
                     <form action="{{ url_for('book_class') }}" method="post" style="display:inline;">
-                        <input type="hidden" name="offering_id" value="{{ offering.offering_id }}">
-                        <button type="submit">Sign up</button>
+                    <input type="hidden" name="offering_id" value="{{ offering.offering_id }}">
+                    <button type="submit">Sign up</button>
                     </form>
                 </td>
+                {% endif %}
             </tr>
             {% endfor %}
         </tbody>

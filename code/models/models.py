@@ -244,8 +244,16 @@ class Offering(db.Model):
     
     instructor = db.relationship('Instructor', backref=db.backref('offerings', lazy=True))
     schedule = db.relationship('Schedule', backref=db.backref('offerings', lazy=True))
-   
-   
+
+    def is_full(self):
+        count = len(Booking.query.filter_by(offering_id=self.offering_id).all())
+        lesson = Lesson.query.filter_by(lesson_id=self.lesson_id).first()
+        return count >= lesson.capacity
+
+    def display_capacity(self):
+        count = len(Booking.query.filter_by(offering_id=self.offering_id).all())
+        lesson = Lesson.query.filter_by(lesson_id=self.lesson_id).first()
+        return f"{count}/{lesson.capacity}"
      
 class Location(db.Model):
     __tablename__ = 'locations'
