@@ -8,8 +8,8 @@ def populate_database():
     clients_data = [
         {'name': 'Sydney Campbell', 'age': 21, 'username': 'syd', 'password': 'password100'},
         {'name': 'David Flores', 'age': 22, 'username': 'david', 'password': 'password101'},
+        {'name': 'Bilel Fekih', 'age': 22, 'username': 'bilel', 'password': '123viva'},
         {'name': 'Jimmy', 'age': 10, 'username': 'jim', 'password': 'password102', 'guardian_id': 1}
-
     ]
 
     admin_data = [
@@ -26,30 +26,39 @@ def populate_database():
     ]
 
     lesson_data = [
-        
         {'name': 'Yoga for Beginners', 'lesson_type': 'Yoga', 'description': 'A beginner-level yoga class for all ages.', 'capacity': 20, 'location_name': 'Downtown Studio', 'location_city': 'Montreal'},
         {'name': 'Advanced Swimming', 'lesson_type': 'Swimming', 'description': 'An intensive swimming class for experienced swimmers.', 'capacity': 15, 'location_name': 'Uptown Pool', 'location_city': 'Montreal'},
-    
+        {'name': 'Boxing Basics', 'lesson_type': 'Boxing', 'description': 'An introductory class for boxing fundamentals.', 'capacity': 25, 'location_name': 'Central Gym', 'location_city': 'Montreal'},
+        {'name': 'Dance Fusion', 'lesson_type': 'Dance', 'description': 'A mix of dance styles for fitness and fun.', 'capacity': 30, 'location_name': 'Dance Loft', 'location_city': 'Montreal'},
+        {'name': 'Pilates Core Strength', 'lesson_type': 'Pilates', 'description': 'Focus on core strength with this pilates class.', 'capacity': 20, 'location_name': 'Wellness Center', 'location_city': 'Montreal'},
     ]
 
-    # Updated time slot data with day_of_week and availability
     time_slot_data = [
         {'lesson_name': 'Yoga for Beginners', 'day_of_week': 'Monday', 'start_time': '2024-11-12 10:00:00', 'end_time': '2024-11-12 11:00:00', 'is_available': True},
         {'lesson_name': 'Advanced Swimming', 'day_of_week': 'Monday', 'start_time': '2024-11-12 12:00:00', 'end_time': '2024-11-12 13:00:00', 'is_available': True},
+        {'lesson_name': 'Boxing Basics', 'day_of_week': 'Tuesday', 'start_time': '2024-11-13 09:00:00', 'end_time': '2024-11-13 11:00:00', 'is_available': True},
+        {'lesson_name': 'Dance Fusion', 'day_of_week': 'Wednesday', 'start_time': '2024-11-14 15:00:00', 'end_time': '2024-11-14 16:30:00', 'is_available': True},
+        {'lesson_name': 'Pilates Core Strength', 'day_of_week': 'Thursday', 'start_time': '2024-11-15 08:00:00', 'end_time': '2024-11-15 09:00:00', 'is_available': True},
+        {'lesson_name': 'Yoga for Beginners', 'day_of_week': 'Friday', 'start_time': '2024-11-16 11:00:00', 'end_time': '2024-11-16 12:00:00', 'is_available': True},
+        {'lesson_name': 'Dance Fusion', 'day_of_week': 'Saturday', 'start_time': '2024-11-17 13:00:00', 'end_time': '2024-11-17 14:30:00', 'is_available': True},
     ]
-
-    
 
     location_data = [
         {'name': 'Downtown Studio', 'city': 'Montreal', 'address': '123 Main St'},
         {'name': 'Uptown Pool', 'city': 'Montreal', 'address': '456 Elm St'},
-        {'name': 'Central Gym', 'city': 'Montreal', 'address': '789 Oak Ave'}
+        {'name': 'Central Gym', 'city': 'Montreal', 'address': '789 Oak Ave'},
+        {'name': 'Dance Loft', 'city': 'Montreal', 'address': '101 Pine Blvd'},
+        {'name': 'Wellness Center', 'city': 'Montreal', 'address': '202 Maple St'},
     ]
 
     schedule_data = [
         {'lesson_id': 1, 'time_slot_id': 1},
-        {'lesson_id': 1, 'time_slot_id': 2},
-        {'lesson_id': 2, 'time_slot_id': 2}
+        {'lesson_id': 2, 'time_slot_id': 2},
+        {'lesson_id': 3, 'time_slot_id': 3},
+        {'lesson_id': 4, 'time_slot_id': 4},
+        {'lesson_id': 5, 'time_slot_id': 5},
+        {'lesson_id': 1, 'time_slot_id': 6},
+        {'lesson_id': 4, 'time_slot_id': 7},
     ]
 
     # Populating locations
@@ -110,7 +119,7 @@ def populate_database():
         )
         db.session.add(instructor)  # Add instructor to session
    
-   #populate lessons
+   # Populate lessons
     for data in lesson_data:
         existing_lesson = Lesson.query.filter_by(name=data['name']).first()
         if existing_lesson:
@@ -135,7 +144,7 @@ def populate_database():
 
     db.session.commit()
 
-    # Populate schedules
+    # Populate time slots
     for slot_data in time_slot_data:
         lesson = Lesson.query.filter_by(name=slot_data['lesson_name']).first()
         if lesson:
@@ -153,12 +162,9 @@ def populate_database():
             time_slot.lesson = lesson
             db.session.add(time_slot) 
 
-
     db.session.commit()
 
-    
-
-    
+    # Populate offerings
     admin = Admin.query.first()  # Assuming there's only one admin
     instructors = Instructor.query.all()  # Get all instructors
 
@@ -171,6 +177,7 @@ def populate_database():
         db.session.add(offering)
     db.session.commit()
 
+    # Populate schedules
     for data in schedule_data:
         print(data)
         lesson = Lesson.query.filter_by(lesson_id=data['lesson_id']).first()

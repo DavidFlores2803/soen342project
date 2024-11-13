@@ -12,6 +12,8 @@
                 <th>Capacity</th>
                 {% if session.get('currentAccount') and not session['currentAccount'].get('is_kid_account') %}
                 <th>Take offering</th>
+                {% elif session['currentAccount'].get('is_kid_account') %}
+                <th>Availability</th>
                 {% endif %}
                 {% if session.get('currentAccount') and session['currentAccount'].get('kid_id') %}
                 <th>Book for child</th>
@@ -27,25 +29,38 @@
                 <td>{{ offering.schedule.time_slot.display_date() }}</td>
                 <td>{{ offering.schedule.time_slot.display_time() }}</td>
                 <td>{{ offering.display_capacity() }}</td>
+
+                {% set has_overlap = offering.overlaps(user_bookings) %}
+                {% set kid_has_overlap = offering.overlaps(kid_bookings) %}
+
                 {% if offering.is_full() %}
-                <td>Class is full</td>
-                {% elif session.get('currentAccount') and not session['currentAccount'].get('is_kid_account') %}
-                <td>
-                    <form action="{{ url_for('book_class') }}" method="post" style="display:inline;">
-                    <input type="hidden" name="offering_id" value="{{ offering.offering_id }}">
-                    <input type="hidden" name="for_child" value="False">
-                    <button type="submit">Sign up</button>
-                    </form>
-                </td>
-                {% if session.get('currentAccount') and session['currentAccount'].get('kid_id') %}
-                <td>
-                    <form action="{{ url_for('book_class') }}" method="post" style="display:inline;">
-                    <input type="hidden" name="offering_id" value="{{ offering.offering_id }}">
-                    <input type="hidden" name="for_child" value="True">
-                    <button type="submit">Book for child</button>
-                    </form>
-                </td>
-                {% endif %}
+                    <td>Class is full</td>
+                {% else %}
+                    {% if session.get('currentAccount') and not session['currentAccount'].get('is_kid_account') and not has_overlap %}
+                        <td>
+                            <form action="{{ url_for('book_class') }}" method="post" style="display:inline;">
+                            <input type="hidden" name="offering_id" value="{{ offering.offering_id }}">
+                            <input type="hidden" name="for_child" value="False">
+                            <button type="submit">Sign up</button>
+                            </form>
+                        </td>
+                    {% elif has_overlap %}
+                        <td>Time conflict</td>
+                    {% elif session['currentAccount'].get('is_kid_account') %}
+                        <td>Can take</td>
+                    {% endif %}
+
+                    {% if session.get('currentAccount') and session['currentAccount'].get('kid_id') and not kid_has_overlap %}
+                        <td>
+                            <form action="{{ url_for('book_class') }}" method="post" style="display:inline;">
+                            <input type="hidden" name="offering_id" value="{{ offering.offering_id }}">
+                            <input type="hidden" name="for_child" value="True">
+                            <button type="submit">Book for child</button>
+                            </form>
+                        </td>
+                    {% elif kid_has_overlap %}
+                        <td>Time conflict</td>
+                    {% endif %}
                 {% endif %}
             </tr>
             {% endfor %}

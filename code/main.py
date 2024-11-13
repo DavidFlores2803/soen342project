@@ -93,10 +93,6 @@ def client_login():
         if client and check_password_hash(client.password_hash,password):
 
             kid = Client.query.filter_by(guardian_id=client.client_id).first()
-            if kid == None:
-                print("has no kid")
-            else:
-                print(f"has kid {kid.client_id}")
 
             is_kid_account = client.age < 18
             
@@ -167,7 +163,12 @@ def logout():
 @app.route("/offerings")
 def offerings():
     offerings = Offering.query.all()
-    return render_template("offerings.html", offerings=offerings)
+    user_bookings = Booking.query.filter_by(client_id=session['currentAccount']['client_id']).all()
+    kid_bookings = None
+    if session['currentAccount'].get('kid_id'):
+        kid_bookings = Booking.query.filter_by(client_id=session['currentAccount']['kid_id']).all()
+        
+    return render_template("offerings.html", offerings=offerings, user_bookings=user_bookings, kid_bookings=kid_bookings)
 
 #take lesson
 @app.route('/take_lesson', methods=['POST'])

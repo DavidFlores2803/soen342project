@@ -1,6 +1,7 @@
 from app import db
 from enum import Enum
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
 
 class BookingStatus(Enum):
     BOOKED = "booked"
@@ -254,7 +255,17 @@ class Offering(db.Model):
         count = len(Booking.query.filter_by(offering_id=self.offering_id).all())
         lesson = Lesson.query.filter_by(lesson_id=self.lesson_id).first()
         return f"{count}/{lesson.capacity}"
-     
+    
+    def overlaps(self, user_bookings):
+        if user_bookings == None:
+            return False
+        
+        for booking in user_bookings:
+            if self.schedule.time_slot.overlaps(booking.offering.schedule.time_slot):
+                return True
+        
+        return False
+ 
 class Location(db.Model):
     __tablename__ = 'locations'
     location_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -370,6 +381,18 @@ class TimeSlot(db.Model):
         start_hour = self.start_time.split(" ")[1]
         end_hour = self.end_time.split(" ")[1]
         return f"From {start_hour} to {end_hour}"
+    
+    def overlaps(self, other):
+        # TODO maybe add check if on same day
+        # if self.day_of_week != other.day_of_week:
+        #     return False
+             
+        start_time = datetime.strptime(self.start_time, "%Y-%m-%d %H:%M:%S")
+        end_time = datetime.strptime(self.end_time, "%Y-%m-%d %H:%M:%S")
+        other_start_time = datetime.strptime(other.start_time, "%Y-%m-%d %H:%M:%S")
+        other_end_time = datetime.strptime(other.end_time, "%Y-%m-%d %H:%M:%S")
+
+        return start_time < other_end_time and end_time > other_start_time
 
     @staticmethod
     def string_to_obj(time_slot_string):
