@@ -1,0 +1,36 @@
+{% include 'header.html' %}
+
+    <h1>Offerings</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Location</th>
+                <th>Lesson</th>
+                <th>Instructor</th>
+                <th>Date</th>
+                <th>Time Slot</th>
+                <th>Capacity</th>
+                <th>Take offering</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for offering in offerings %}
+            <tr>
+                <td>{{ offering.lesson.location.name }}</td>
+                <td>{{ offering.lesson.name }}</td>
+                <td>{{ offering.instructor.username}}</td>
+                <td>{{ offering.schedule.time_slot.display_date() }}</td>
+                <td>{{ offering.schedule.time_slot.display_time() }}</td>
+                <td>{{ offering.lesson.capacity }}</td>
+                <td>
+                    <form action="{{ url_for('book_class') }}" method="post" style="display:inline;">
+                        <input type="hidden" name="offering_id" value="{{ offering.offering_id }}">
+                        <button type="submit">Sign up</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

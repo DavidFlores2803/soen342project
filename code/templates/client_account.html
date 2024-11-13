@@ -6,19 +6,19 @@
             <tr>
                 <th>Location</th>
                 <th>Lesson</th>
+                <th>Instructor</th>
                 <th>Date</th>
                 <th>Time Slot</th>
-                <th>Instructor</th>
             </tr>
         </thead>
         <tbody>
             {% for class in classes_taken %}
             <tr>
-                <td>{{ class.location.name }}</td>
-                <td>{{ class.lesson.name }}</td>
-                <td>{{ class.date.name }}</td>
-                <td>{{ class.timeSlot }}</td>
-                <td>{{ class.instructor }}</td>
+                <td>{{ class.offering.lesson.location.name }}</td>
+                <td>{{ class.offering.lesson.name }}</td>
+                <td>{{ class.offering.instructor.username}}</td>
+                <td>{{ class.offering.schedule.time_slot.display_date() }}</td>
+                <td>{{ class.offering.schedule.time_slot.display_time() }}</td>
             </tr>
             {% endfor %}
         </tbody>

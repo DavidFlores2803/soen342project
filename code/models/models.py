@@ -300,7 +300,7 @@ class Booking(db.Model):
     offering = db.relationship('Offering', backref=db.backref('bookings', lazy=True))
 
     def __repr__(self):
-     return f'Booking of {self.client.name} for {self.offering.lesson.lesson_type} on {self.offering.lesson.day}'
+        return f'Booking of {self.client.name} for {self.offering.lesson.lesson_type}'
     
     @classmethod
     def create_booking(cls, client, offering):

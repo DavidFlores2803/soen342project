@@ -35,11 +35,11 @@ def client_registration():
 
         client = Client.query.filter_by(username=username).first()
 
-        # session["currentAccount"] = {
-        #     "username": client.username,
-        #     "client_id": client.client_id,
-        #     }
-        # session["accountType"] = CLIENT
+        session["currentAccount"] = {
+            "username": client.username,
+            "client_id": client.client_id,
+            }
+        session["accountType"] = CLIENT
 
         #TODO redirect to client page
         if client:
@@ -152,9 +152,8 @@ def logout():
     
 @app.route("/offerings")
 def offerings():
-    #TODO redirect to home if not logged in as instructor
-    
-    return render_template("offerings.html", offerings=offerings_list)
+    offerings = Offering.query.all()
+    return render_template("offerings.html", offerings=offerings)
 
 #take lesson
 @app.route('/take_lesson', methods=['POST'])
@@ -208,13 +207,31 @@ def lessons():
 def book_class():
     offering_id = request.form.get('offering_id')  
 
-    client_id = session.get("currentAccount")["name"]
+    client_id = session.get("currentAccount")["client_id"]
 
     booked_class = Booking(client_id=client_id, offering_id=offering_id)
-  
-    db.session.add(booked_class)
-    db.session.commit()
 
+    # Check if client and offering exist
+    client_exists = Client.query.get(booked_class.client_id)
+    offering_exists = Offering.query.get(booked_class.offering_id)
+
+    if not client_exists:
+        print(f"Client with ID {booked_class.client_id} does not exist.")
+    elif not offering_exists:
+        print(f"Offering with ID {booked_class.offering_id} does not exist.")
+    else:
+        # Only add booking if it doesn’t already exist
+        existing_booking = Booking.query.filter_by(
+            client_id=booked_class.client_id,
+            offering_id=booked_class.offering_id
+        ).first()
+
+        if not existing_booking:
+            print(f"Adding booking {booked_class.client_id}, {booked_class.offering_id} to the db")
+            db.session.add(booked_class)
+            db.session.commit()
+        else:
+            print("Booking already exists in the database.")
     
     return redirect(url_for('client_account'))
 
@@ -250,12 +267,8 @@ def classes_offered():
 # Show all booked classes for the client
 @app.route('/client_account')
 def client_account():
-    client_id = session.get("currentAccount")["name"]  
-
-    
+    client_id = session.get("currentAccount")["client_id"]  
     booked_classes = db.session.query(Booking).filter(Booking.client_id == client_id).all()
-
-   
     return render_template('client_account.html', classes_taken=booked_classes)
 
 
