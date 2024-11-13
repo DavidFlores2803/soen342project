@@ -65,7 +65,7 @@
     <select name="location_id" id="location_select" required>
         <option value="" disabled selected>Select a location</option>
         {% for location in locations %}
-            <option value="{{ location.location_id }}">{{ location.name }}, {{ location.city }}, {{ location.address }}</option>
+            <option value="{{ location.location_id }}">{{ location.name }}:{{ location.city }}, {{ location.address }}</option>
         {% endfor %}
     </select>
     <button type="button" data-bs-toggle="modal" data-bs-target="#createLocationModal">Create Location</button>
@@ -74,7 +74,7 @@
     <select name="time_slots_id" id="time_slot_select" required multiple>
         <option value="" disabled selected>Select a time slot</option>
         {% for slot in time_slots %}
-            <option value="{{ slot.slot_id }}">{{slot.day_of_week}}{{ slot.start_time }} - {{ slot.end_time }}</option>
+            <option value="{{ slot.slot_id }}">{{slot.day_of_week}}<br>{{ slot.start_time }} - {{ slot.end_time }}</option>
         {% endfor %}
     </select>
 
@@ -120,11 +120,15 @@
                 <option value="Friday">Friday</option>
                 <option value="Saturday">Saturday</option>
             </select>
+            <br>
             <label for="start_time">Start Time:</label>
             <input type="time" id="start_time" name="start_time" required>
-
+            <input type = "date" id = "start_time_date" name="start_time_date" required>
+            <br>
             <label for="end_time">End Time:</label>
             <input type="time" id="end_time" name="end_time" required>
+            <input type = "date" id = "end_time_date" name="end_time_date"required>
+            <br>
 
             <button type="submit">Create Time Slot</button>
         </form>

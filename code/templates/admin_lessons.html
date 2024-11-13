@@ -70,7 +70,7 @@
             <td>{{ lesson.location.city }}, {{lesson.location.name}}</td>
             <td>
                 {% for time_slot in lesson.time_slots %}
-                    {{time_slot.day_of_week}},{{ time_slot.start_time }} - {{ time_slot.end_time }}<br>
+                    {{time_slot.day_of_week}}:<br>{{ time_slot.start_time }} - {{ time_slot.end_time }}<br>
                 {% else %}
                     No available time slots
                 {% endfor %}
@@ -82,7 +82,7 @@
         {% endfor %}
     </tbody>
 </table>
-<!-- Modal for Creating Time Slot -->
+
 <div id="createTimeSlotModal" class="modal">
     <div class="modal-content">
         <span class="close">&times;</span>
@@ -99,12 +99,17 @@
                 <option value="Friday">Friday</option>
                 <option value="Saturday">Saturday</option>
             </select>
+            <br>
         
             <label for="start_time">Start Time:</label>
+            <input type = "date" id ="start_time_date" name="start_time_date" required>
             <input type="time" id="start_time" name="start_time" required>
-        
+            <br>
             <label for="end_time">End Time:</label>
+            <input type = "date" id ="end_time_date" name="end_time_date" required>
             <input type="time" id="end_time" name="end_time" required>
+            
+            <br>
         
             <button type="submit">Create Time Slot</button>
         </form>

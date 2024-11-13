@@ -195,6 +195,11 @@ def populate_database():
 if __name__ == '__main__':
     app = create_app()
     with app.app_context():
-        db.drop_all()
-        db.create_all()  
-        populate_database()
+        # db.drop_all()
+        # db.create_all()  
+        # #populate_database()
+        offerings = Offering.query.all()
+        for offering in offerings:
+            if offering.schedule is None:
+                db.session.delete(offering)
+                db.session.commit()

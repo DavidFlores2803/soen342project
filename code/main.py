@@ -377,13 +377,21 @@ def create_timeslot():
     start_time = request.form['start_time']
     end_time = request.form['end_time']
     day_of_week = request.form['day_of_week']
-    existing_slot = TimeSlot.query.filter_by(day_of_week=day_of_week, start_time=start_time, end_time=end_time).first()
+   
+
+    start_time_date = request.form['start_time_date']
+    end_time_date = request.form['end_time_date']
+
+    new_start = start_time_date + " " + start_time
+    new_end = end_time_date + " " + end_time   
+
+    existing_slot = TimeSlot.query.filter_by(day_of_week=day_of_week, start_time=new_start, end_time=new_end).first()
 
     if existing_slot:
         flash('This time-slot already exists')
         return redirect(url_for('home'))
 
-    new_time_slot = TimeSlot(day_of_week=day_of_week,start_time=start_time, end_time=end_time)
+    new_time_slot = TimeSlot(day_of_week=day_of_week,start_time=new_start, end_time=new_end)
     db.session.add(new_time_slot)
     db.session.commit()
 
@@ -396,17 +404,25 @@ def create_timeslot_by_id():
     start_time = request.form['start_time']
     end_time = request.form['end_time']
     day_of_week = request.form['day_of_week']
+    print(request.form)
+    start_time_date = request.form['start_time_date']
+    print(start_time_date)
+    end_time_date = request.form['end_time_date']
+
+    new_start = start_time_date + " " + start_time
+    print(new_start)
+    new_end = end_time_date + " " + end_time   
 
     
-    start_time_obj = datetime.strptime(start_time)
-    end_time_obj = datetime.strptime(end_time)
+    # start_time_obj = datetime.strptime(start_time)
+    # end_time_obj = datetime.strptime(end_time)
 
     
     new_time_slot = TimeSlot(
         day_of_week=day_of_week,
         lesson_id=lesson_id,
-        start_time=start_time_obj,
-        end_time=end_time_obj
+        start_time=new_start,
+        end_time=new_end
     )
     lesson = Lesson.query.get(lesson_id)
     new_schedule = Schedule(lesson=lesson, time_slot=new_time_slot)
