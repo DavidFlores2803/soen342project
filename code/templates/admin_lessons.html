@@ -1,4 +1,50 @@
 {% include 'header.html' %}
+<head>
+    <link rel="stylesheet" href="static/style.css">
+    <style>
+        body { font-family: Arial, Helvetica, sans-serif; }
+
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1; 
+            padding-top: 100px;
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0, 0, 0, 0.4); 
+        }
+
+  
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 50%;
+        }
+
+        /* The Close Button */
+        .close {
+            color: #aaaaaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .pushable:focus:not(:focus-visible) {
+            outline: none;
+        }
+    </style>
+</head>
 
 <h1>Lessons List</h1>
 
@@ -10,8 +56,8 @@
             <th>Type</th>
             <th>Description</th>
             <th>Location</th>
-            <th>City</th>
             <th>Time Slots</th>
+            <th>New Time Slot</th>
         </tr>
     </thead>
     <tbody>
@@ -21,10 +67,76 @@
             <td>{{ lesson.name }}</td>
             <td>{{ lesson.lesson_type }}</td>
             <td>{{ lesson.description }}</td>
-            
+            <td>{{ lesson.location.city }}, {{lesson.location.name}}</td>
+            <td>
+                {% for time_slot in lesson.time_slots %}
+                    {{time_slot.day_of_week}},{{ time_slot.start_time }} - {{ time_slot.end_time }}<br>
+                {% else %}
+                    No available time slots
+                {% endfor %}
+            </td>
+            <td>
+                <button type="button" id="timeSlotBtn{{ lesson.lesson_id }}" class="btn btn-primary">Create Time-Slot</button>
+            </td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
+<!-- Modal for Creating Time Slot -->
+<div id="createTimeSlotModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3>Create New Time Slot</h3>
+        <form id="time_slot_form" action="{{ url_for('create_timeslot_by_id') }}" method="post">
+            <input type="hidden" id="lesson_id" name="lesson_id">
+            
+            <label for="day_of_week">Day of Week:</label>
+            <select id="day_of_week" name="day_of_week" required>
+                <option value="Monday">Monday</option>
+                <option value="Tuesday">Tuesday</option>
+                <option value="Wednesday">Wednesday</option>
+                <option value="Thursday">Thursday</option>
+                <option value="Friday">Friday</option>
+                <option value="Saturday">Saturday</option>
+            </select>
+        
+            <label for="start_time">Start Time:</label>
+            <input type="time" id="start_time" name="start_time" required>
+        
+            <label for="end_time">End Time:</label>
+            <input type="time" id="end_time" name="end_time" required>
+        
+            <button type="submit">Create Time Slot</button>
+        </form>
+        
+    </div>
+</div>
+
+<script>
+    var timeSlotModal = document.getElementById("createTimeSlotModal");
+    var timeSlotBtns = document.querySelectorAll('[id^="timeSlotBtn"]');
+    
+    timeSlotBtns.forEach(function(btn) {
+        btn.onclick = function() {
+            var lessonId = btn.id.replace("timeSlotBtn", "");  
+            document.getElementById("lesson_id").value = lessonId;  
+            timeSlotModal.style.display = "block";
+        }
+    });
+
+    var closeBtn = document.querySelector(".close");
+
+    closeBtn.onclick = function() {
+        timeSlotModal.style.display = "none";
+    }
+
+    window.onclick = function(event) {
+        if (event.target == timeSlotModal) {
+            timeSlotModal.style.display = "none";
+        }
+    }
+</script>
+
+
 </body>
 </html>
