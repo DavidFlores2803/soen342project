@@ -1,0 +1,24 @@
+{% include 'header.html' %}
+
+<h1>Classes Offered</h1>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>City</th>
+            <th>Address</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for location in locations %}
+        <tr>
+          
+            <td>{{ location.name }}</td>
+            <td>{{ location.city }}</td>
+            <td>{{ location.address }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</body>
+</html>

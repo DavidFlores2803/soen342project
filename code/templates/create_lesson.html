@@ -1,5 +1,56 @@
 {% include 'header.html' %}
 
+
+<head>
+    <link rel="stylesheet" href="static/style.css">
+    <style>
+        body { font-family: Arial, Helvetica, sans-serif; }
+
+        .modal {
+            display: none;
+            position: fixed; 
+            z-index: 1; 
+            padding-top: 100px;
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgb(0,0,0); 
+            background-color: rgba(0,0,0,0.4); 
+        }
+        
+        /* Modal Content */
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 50%;
+        }
+        
+        /* The Close Button */
+        .close {
+            color: #aaaaaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .pushable:focus:not(:focus-visible) {
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Create Lesson</h2>
 <form action="{{ url_for('create_lesson') }}" method="post">
     <p>Lesson Name:</p>
     <input type="text" name="lesson" required>
@@ -10,27 +61,114 @@
     <p>Lesson Description:</p>
     <input type="text" name="description" required>
 
-    <p>Location Name:</p>
-    <input type="text" name="location_name" required>
+    <p>Location:</p>
+    <select name="location_id" id="location_select" required>
+        <option value="" disabled selected>Select a location</option>
+        {% for location in locations %}
+            <option value="{{ location.location_id }}">{{ location.name }}, {{ location.city }}, {{ location.address }}</option>
+        {% endfor %}
+    </select>
+    <button type="button" data-bs-toggle="modal" data-bs-target="#createLocationModal">Create Location</button>
 
-    <p>Location City:</p>
-    <input type="text" name="location_city" required>
+    <p>Time Slot:</p>
+    <select name="time_slots_id" id="time_slot_select" required multiple>
+        <option value="" disabled selected>Select a time slot</option>
+        {% for slot in time_slots %}
+            <option value="{{ slot.slot_id }}">{{slot.day_of_week}}{{ slot.start_time }} - {{ slot.end_time }}</option>
+        {% endfor %}
+    </select>
 
-    <p>Day of the Week (e.g., "Monday"):</p>
-    <input type="text" name="day" required>
+    <button type="button" data-bs-toggle="modal" data-bs-target="#createTimeSlotModal">Create Time-Slot</button>
 
-    <p>Start Time (e.g., "10"):</p>
-    <input type="text" name="start_time" required>
+    <p>Capacity:</p>
+    <input type="number" name="capacity" required>
+    <p></p>
 
-    <p>End Time (e.g., "12"):</p>
-    <input type="text" name="end_time" required>
-
-
-    <p>Capacity::</p>
-    <input type="text" name="capacity" required>
-
-    <input type="submit" value="Create Lesson">
+    <button class=""type="submit" ><span class="">Create Lesson</span></button>
 </form>
 
-    </body>
-</html>
+<div id="createLocationModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3>Create New Location</h3>
+        <form id="location_form" action="{{ url_for('create_location') }}" method="post">
+            <label for="location_name">Name:</label>
+            <input type="text" id="location_name" name="location_name" required>
+
+            <label for="location_address">Address:</label>
+            <input type="text" id="location_address" name="location_address" required>
+
+            <label for="location_city">City:</label>
+            <input type="text" id="location_city" name="location_city" required>
+
+            <button type="submit">Create Location</button>
+        </form>
+    </div>
+</div>
+
+<div id="createTimeSlotModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3>Create New Time Slot</h3>
+        <form id="time_slot_form" action="{{ url_for('create_timeslot') }}" method="post">
+            <label for="day_of_week">Day of Week:</label>
+            <select id="day_of_week" name="day_of_week" required>
+                <option value="Monday">Monday</option>
+                <option value="Tuesday">Tuesday</option>
+                <option value="Wednesday">Wednesday</option>
+                <option value="Thursday">Thursday</option>
+                <option value="Friday">Friday</option>
+                <option value="Saturday">Saturday</option>
+            </select>
+            <label for="start_time">Start Time:</label>
+            <input type="time" id="start_time" name="start_time" required>
+
+            <label for="end_time">End Time:</label>
+            <input type="time" id="end_time" name="end_time" required>
+
+            <button type="submit">Create Time Slot</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    var locationModal = document.getElementById("createLocationModal");
+    var timeSlotModal = document.getElementById("createTimeSlotModal");
+
+    var locationBtn = document.querySelector('[data-bs-target="#createLocationModal"]');
+    var timeSlotBtn = document.querySelector('[data-bs-target="#createTimeSlotModal"]');
+
+    var closeBtns = document.getElementsByClassName("close");
+
+    locationBtn.onclick = function() {
+        locationModal.style.display = "block";
+    }
+
+    timeSlotBtn.onclick = function() {
+        timeSlotModal.style.display = "block";
+    }
+
+    Array.from(closeBtns).forEach(function(span) {
+        span.onclick = function() {
+            locationModal.style.display = "none";
+            timeSlotModal.style.display = "none";
+        }
+    });
+
+    window.onclick = function(event) {
+        if (event.target == locationModal || event.target == timeSlotModal) {
+            locationModal.style.display = "none";
+            timeSlotModal.style.display = "none";
+        }
+    }
+
+    function updateSelectOptions(selectId, newOptionValue, newOptionText) {
+        var selectElement = document.getElementById(selectId);
+        var newOption = document.createElement('option');
+        newOption.value = newOptionValue;
+        newOption.textContent = newOptionText;
+        selectElement.appendChild(newOption);
+    }
+</script>
+
+</body>

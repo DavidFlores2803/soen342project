@@ -100,7 +100,7 @@ class Admin(db.Model):
         
         return new_offering.offering_id
      
-     def createLesson(self, name, lesson_type, description, capacity):
+     def createLesson(self, name, lesson_type, description, capacity, location, time_slots):
      
         existing_lesson = Lesson.query.filter_by(name=name).first()
         if existing_lesson:
@@ -110,11 +110,18 @@ class Admin(db.Model):
             name=name,
             lesson_type=lesson_type,
             description=description,
-            capacity=capacity
+            capacity=capacity,
+            location=location,
         )
-        
+        for slot in time_slots:
+            day, start, end = slot['day'], slot['start_time'], slot['end_time']
+            new_time_slot = TimeSlot(day_of_week=DayOfTheWeek[day.upper()], start_time=start, end_time=end)
+            new_lesson.add_time_slot(new_time_slot)
+
         db.session.add(new_lesson)
         db.session.commit()
+        
+        
         
         return f"Lesson '{name}' created successfully!"
      
@@ -142,6 +149,7 @@ class Admin(db.Model):
             instructor = Instructor.query.filter_by(username=account_username).first()
             if instructor:
                 db.session.delete(instructor)
+                db.session.commit()
         else:
             print("Not valid account type")
 
@@ -165,14 +173,18 @@ class Lesson(db.Model):
     location_id = db.Column(db.Integer, db.ForeignKey('locations.location_id', name='fk_location_id'), nullable=True)
     location = db.relationship('Location', backref=db.backref('lessons', lazy=True))
 
-    def __init__(self, name, lesson_type, description, capacity, location, is_available=True):
+    def __init__(self, name, lesson_type, description, capacity, location, time_slots=None, is_available=True):
         self.name = name
         self.lesson_type = lesson_type
         self.description = description
         self.capacity = capacity
         self.location = location
         self.is_available = is_available
-        
+        if time_slots:
+            for time_slot in time_slots:
+                day, start, end = time_slot['day_of_week'], time_slot['start_time'], time_slot['end_time']
+                new_time_slot = TimeSlot(day_of_week=day, start_time=start, end_time=end)
+                self.add_slot(new_time_slot)
        
     #temporary until figure out 
     def mark_as_available(self):
@@ -181,6 +193,9 @@ class Lesson(db.Model):
     def mark_as_taken(self):
         self.is_available = False
 
+    def add_slot(self, time_slot):
+        self.time_slots.append(time_slot)
+        db.session.commit()
 
     def add_time_slot(self, day, start_time, end_time):
         time_slot = TimeSlot(
@@ -202,7 +217,7 @@ class Lesson(db.Model):
 
 
     def get_taken_time_slots(self):
-        return [slot for slot in self.time_slots if not slot.isAvailable]
+        return [slot for slot in self.lesson_time_slots if not slot.is_available]
 
     def mark_time_slot_taken(self, day, start_time, end_time):
         time_slot = self._find_time_slot(day, start_time, end_time)
@@ -280,7 +295,8 @@ class Schedule(db.Model):
 
     @staticmethod
     def get_schedule_by_lesson(lesson_id):
-        return Schedule.query.filter_by(lesson_id=lesson_id).all()
+        schedules = Schedule.query.filter_by(lesson_id=lesson_id, is_available=True).all()
+        return [schedule.time_slot for schedule in schedules]
     
 
     # def __repr__(self):

@@ -180,7 +180,6 @@ def take_lesson():
     db.session.add(new_offering)
     db.session.commit()
 
-    flash("Lesson successfully taken!")
     
     return redirect(url_for('lessons'))
 
@@ -279,36 +278,126 @@ def admin_account():
 @app.route('/create_lesson', methods=['GET', 'POST'])
 def create_lesson():
     if request.method == 'POST':
-        # Get form data
+   
         lesson_name = request.form['lesson']
         lesson_type = request.form['type']
         description = request.form['description']
         capacity = request.form['capacity']
-        location_name = request.form['location_name']
-        location_city = request.form['location_city']
-        day_of_week = request.form['day']
-        start_time = request.form['start_time']
-        end_time = request.form['end_time']
-        
-        
-        # Create a lesson
+        location_id = request.form['location_id']
+        time_slot_ids = request.form.getlist('time_slots_id')
+
+        location = Location.query.get(location_id)
+        time_slots = TimeSlot.query.filter(TimeSlot.id.in_(time_slot_ids)).all()
+
+        for time_slot in time_slots:
+            existing_lesson = Lesson.query.join(Lesson.lesson_time_slots).filter(TimeSlot.id == time_slot.id).first()
+            if existing_lesson:
+                flash(f"Lesson with the time-slot {time_slot.start_time} - {time_slot.end_time} already exists.")
+                return redirect(url_for('create_lesson'))
+
         admin = Admin.query.first()  
         result = admin.createLesson(
             name=lesson_name,
             lesson_type=lesson_type,
-            description=description,  
-            capacity=capacity
+            description=description,
+            capacity=capacity,
+            location=location,
+            time_slots=time_slots
         )
 
+        flash("lesson added!!!!!")
         return redirect(url_for('admin_lessons'))
 
-    return render_template('create_lesson.html')
+   
+    locations = Location.query.all()
+    time_slots = TimeSlot.query.all()
+
+    return render_template('create_lesson.html', locations=locations, time_slots=time_slots)
+
+@app.route('/add_location', methods=['GET', 'POST'])
+def add_location():
+    
+    return render_template('add_location.html')
+
+@app.route('/view_locations')
+def view_locations():
+    locations = Location.query.all()
+    return render_template('view_locations.html', locations=locations)
+
+@app.route('/create_location', methods=['POST'])
+def create_location():
+    name = request.form['location_name']
+    location_address = request.form['location_address']
+    location_city = request.form['location_city']
+
+
+    existing_location = Location.query.filter_by(name=name, city=location_city, address=location_address).first()
+
+    if existing_location:
+        #figure out alerts
+        flash("this location already exists..")
+        return redirect(url_for('home')) 
+   
+    new_location = Location(name=name, address=location_address, city=location_city)
+    db.session.add(new_location)
+    db.session.commit()
+    flash("wohoooo added new location!")
+    return redirect(url_for('home'))
+
+@app.route('/create_timeslot', methods=['POST'])
+def create_timeslot():
+    start_time = request.form['start_time']
+    end_time = request.form['end_time']
+    day_of_week = request.form['day_of_week']
+    existing_slot = TimeSlot.query.filter_by(day_of_week=day_of_week, start_time=start_time, end_time=end_time).first()
+
+    if existing_slot:
+        flash('This time-slot already exists')
+        return redirect(url_for('home'))
+
+    new_time_slot = TimeSlot(day_of_week=day_of_week,start_time=start_time, end_time=end_time)
+    db.session.add(new_time_slot)
+    db.session.commit()
+
+    flash('wohooooooo')
+    return redirect(url_for('home'))
+
+@app.route('/create_timeslot_by_id', methods=['POST'])
+def create_timeslot_by_id():
+    lesson_id = request.form['lesson_id']
+    start_time = request.form['start_time']
+    end_time = request.form['end_time']
+    day_of_week = request.form['day_of_week']
+
+    
+    start_time_obj = datetime.strptime(start_time)
+    end_time_obj = datetime.strptime(end_time)
+
+    
+    new_time_slot = TimeSlot(
+        day_of_week=day_of_week,
+        lesson_id=lesson_id,
+        start_time=start_time_obj,
+        end_time=end_time_obj
+    )
+    lesson = Lesson.query.get(lesson_id)
+    new_schedule = Schedule(lesson=lesson, time_slot=new_time_slot)
+    db.session.add(new_schedule)
+    db.session.commit()
+    
+    db.session.add(new_time_slot)
+    db.session.commit()
+
+    return redirect(url_for('admin_lessons'))
+
 
 @app.route('/admin_lessons')
 def admin_lessons():
     lessons = Lesson.query.all()  
+    for lesson in lessons:
+        
+        lesson.time_slots = Schedule.get_schedule_by_lesson(lesson.lesson_id)
     return render_template('admin_lessons.html', lessons=lessons)
-
 
 
 #delete instructor

@@ -61,3 +61,25 @@ th, td {
 th {
     background-color:lightgray;
 }
+
+.pushable {
+    background: hsl(0, 0%, 35%);
+    border: none;
+    border-radius: 12px;
+    padding: 0;
+    cursor: pointer;
+    outline-offset: 4px;
+  }
+  .front {
+    display: block;
+    padding: 12px 42px;
+    border-radius: 12px;
+    font-size: 1.25rem;
+    background: hsl(345, 18%, 9%);
+    color: white;
+    transform: translateY(-6px);
+  }
+  
+  .pushable:active .front {
+    transform: translateY(-2px);
+  }
