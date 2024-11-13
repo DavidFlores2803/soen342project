@@ -91,10 +91,24 @@ def client_login():
         client = Client.query.filter_by(username=username).first()
 
         if client and check_password_hash(client.password_hash,password):
+
+            kid = Client.query.filter_by(guardian_id=client.client_id).first()
+            if kid == None:
+                print("has no kid")
+            else:
+                print(f"has kid {kid.client_id}")
+
+            is_kid_account = client.age < 18
+            
             session["currentAccount"] = {
                 "username": client.username,
                 "client_id": client.client_id,
+                "is_kid_account": is_kid_account
                 }
+            
+            if kid is not None:
+                session["currentAccount"]["kid_id"] = kid.client_id
+
             session["accountType"] = CLIENT
         
             return redirect(url_for("home"))
@@ -206,8 +220,12 @@ def lessons():
 @app.route('/book_class', methods=['POST'])
 def book_class():
     offering_id = request.form.get('offering_id')  
+    is_for_child = request.form.get("for_child") == "True"
 
-    client_id = session.get("currentAccount")["client_id"]
+    if is_for_child:
+        client_id = session.get("currentAccount")["kid_id"]
+    else:
+        client_id = session.get("currentAccount")["client_id"]
 
     booked_class = Booking(client_id=client_id, offering_id=offering_id)
 
