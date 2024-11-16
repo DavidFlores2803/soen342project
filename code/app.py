@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
-
+from datetime import timedelta
 db = SQLAlchemy()
 @event.listens_for(Engine, 'connect')
 def enable_foreign_keys(dbapi_connection, connection_record):
@@ -13,7 +13,10 @@ def enable_foreign_keys(dbapi_connection, connection_record):
 def create_app():
     app = Flask(__name__, template_folder='templates')
     
+
+
   
+
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///project.db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.secret_key = "chiwiwi"

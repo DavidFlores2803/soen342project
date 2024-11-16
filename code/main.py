@@ -33,28 +33,30 @@ def client_registration():
         username = request.form["username"]
         password = request.form["password"]
 
-        
+        # Check if the username already exists
         client = Client.query.filter_by(username=username).first()
 
         if client:
-
+            # If the username is already taken, redirect back to the registration page
             return redirect(url_for('client_registration'))
 
-     
+        # Create a new client if username is not already taken
         new_client = Client(name=name, age=age, username=username)
         new_client.set_password(password)
 
         db.session.add(new_client)
         db.session.commit()
 
-        # Fetch the new client to set session details
+        # Fetch the newly created client and set session details
         client = Client.query.filter_by(username=username).first()
-        session["currentAccount"] = {
-            "username": client.username,
-            "client_id": client.client_id,
-        }
-        session["accountType"] = CLIENT
+        if client:
+            session["currentAccount"] = {
+                "username": client.username,
+                "client_id": client.client_id,
+            }
+            session["accountType"] = CLIENT
 
+        # Redirect to client login page after successful registration
         return redirect(url_for('client_login'))
 
     return render_template('client_registration.html')
@@ -260,18 +262,16 @@ def book_class():
 
 @app.route('/delete_offering', methods=['POST'])
 def delete_offering():
-    offering_id = int(request.form.get('offering_id'))
+    offering_id = request.form.get('offering_id')
     
-    admin_id = session.get('currentAccount', {}).get('admin_id')
-    if admin_id:
-        admin = Admin.query.filter_by(admin_id=admin_id).first()
-        if admin:
-            success = admin.deleteOffering(offering_id)
-            if success:
-                return redirect(url_for('admin_account'))
-            else:
-                return "Offering not found", 404
-    return "Unauthorized", 403  
+    admin = Admin.query.first() 
+   
+    success = admin.deleteOffering(offering_id)
+    if success:
+        return redirect(url_for('admin_account'))
+    else:
+        return "Offering not found", 404
+
 
 
 @app.route('/classes_offered')
@@ -454,14 +454,14 @@ def manage_instructors():
     if session.get("accountType") == ADMIN:
         
         instructors = Instructor.query.all()
-        admin_id = session.get('currentAccount', {}).get('admin_id')
+        #admin_id = session.get('currentAccount', {}).get('admin_id')
+        admin = Admin.query.first() 
 
         if request.method == 'POST':
             account_username = request.form.get('username')
-            if admin_id:
-                admin = Admin.query.filter_by(admin_id=admin_id).first()
-                admin.deleteAccount("instructor", account_username)
-                db.session.commit()
+    
+            admin.deleteAccount("instructor", account_username)
+            db.session.commit()
 
             return redirect(url_for('manage_instructors'))
 
@@ -473,14 +473,13 @@ def manage_instructors():
 def manage_clients():
     if session.get("accountType") == ADMIN:
         clients = Client.query.all()
-        admin_id = session.get('currentAccount', {}).get('admin_id')
+        admin = Admin.query.first() 
 
         if request.method == 'POST':
             account_username = request.form.get('username')
-            if admin_id:
-                admin = Admin.query.filter_by(admin_id=admin_id).first()
-                admin.deleteAccount("client", account_username)
-                db.session.commit()
+            
+            admin.deleteAccount("client", account_username)
+            db.session.commit()
             return redirect(url_for('manage_clients'))
 
         return render_template('manage_clients.html', clients=clients)

@@ -130,7 +130,8 @@ class Admin(db.Model):
          offering_to_delete = Offering.query.get(id)  
     
          if offering_to_delete:
-            db.session.delete(offering_to_delete) 
+            Booking.query.filter_by(offering_id=id).delete()
+            db.session.delete(offering_to_delete)
             db.session.commit() 
             return True
          else:

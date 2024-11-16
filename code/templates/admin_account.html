@@ -1,48 +1,45 @@
 {% include 'header.html' %}
 
-    <h1>All Offerings
-        
-    </h1>
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Lesson</th>
-                <th>Type</th>
-                <th>Description</th>
-                <th>Instructor</th>
-                <th>Delete Offering</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for offering in offered_classes %}
-            <tr>
-                <td>{{ offering.offering_id }}</td>
-                <td>{{ offering.lesson.name }}</td>
-                <td>{{ offering.lesson.lesson_type }}</td>
-                <td>{{ offering.lesson.description }}</td>
-                <td>{{ offering.instructor.name }}</td>
-              
-                <td>
-                    <ul>
-                        <!-- Loop through the availabilities and display each time slot -->
-                        {% for availability in offering.availabilities %}
-                            <li>{{ availability.timeSlot.day.name }}: {{ availability.timeSlot.startTime }} - {{ availability.timeSlot.endTime }}</li>
-                        {% endfor %}
-                    </ul>
-                    
-                    <ul>
-                            <li>
-                                <form action="{{ url_for('delete_offering') }}" method="post" style="display:inline;">
-                                    <input type="hidden" name="offering_id" value="{{ offering.id }}">
-                                    <button type="submit">Delete Offering</button>
-                                </form>
-                            </li>
-                    </ul>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    </body>
+<h1>All Offerings</h1>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Lesson</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Instructor</th>
+            <th>Delete Offering</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for offering in offered_classes %}
+        <tr>
+            <td>{{ offering.offering_id }}</td>
+            <td>{{ offering.lesson.name }}</td>
+            <td>{{ offering.lesson.lesson_type }}</td>
+            <td>{{ offering.lesson.description }}</td>
+            <td>{{ offering.instructor.name }}</td>
+            <td>
+                <ul>
+                    <!-- Loop through the availabilities and display each time slot -->
+                    {% for availability in offering.availabilities %}
+                        <li>{{ availability.timeSlot.day.name }}: {{ availability.timeSlot.startTime }} - {{ availability.timeSlot.endTime }}</li>
+                    {% endfor %}
+                </ul>
+
+                <ul>
+                    <li>
+                        <form action="{{ url_for('delete_offering') }}" method="post" style="display:inline;">
+                            <input type="hidden" name="offering_id" value="{{ offering.offering_id }}">
+                            <button type="submit">Delete Offering</button>
+                        </form>
+                    </li>
+                </ul>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</body>
 </html>
