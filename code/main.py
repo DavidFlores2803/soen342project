@@ -33,26 +33,30 @@ def client_registration():
         username = request.form["username"]
         password = request.form["password"]
 
+        
         client = Client.query.filter_by(username=username).first()
 
-        session["currentAccount"] = {
-            "username": client.username,
-            "client_id": client.client_id,
-            }
-        session["accountType"] = CLIENT
-
-        #TODO redirect to client page
         if client:
+
             return redirect(url_for('client_registration'))
-        
+
+     
         new_client = Client(name=name, age=age, username=username)
         new_client.set_password(password)
 
         db.session.add(new_client)
         db.session.commit()
 
+        # Fetch the new client to set session details
+        client = Client.query.filter_by(username=username).first()
+        session["currentAccount"] = {
+            "username": client.username,
+            "client_id": client.client_id,
+        }
+        session["accountType"] = CLIENT
+
         return redirect(url_for('client_login'))
-    
+
     return render_template('client_registration.html')
 
 
